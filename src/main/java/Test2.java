@@ -9,6 +9,7 @@ public class Test2 {
         int nrPhotons = 10000;
         int layers = 1;
 
+        //Initialize the gas layer
         GasLayer gasLayer = new GasLayer(100, 1, 0);
 
         System.out.println("Optical depth: " + gasLayer.getOpticalDepth());
@@ -83,9 +84,11 @@ public class Test2 {
         for (int i = 0; i < photons.size(); i++) {
             photons.get(i).limitDimensions(gasLayer.getGeometricalDepth()*2);
             coordinates[i] = photons.get(i).toCoordinate();
+            //If the photon has a weight of 0, set the color to red
             if (photons.get(i).getWeight() == 0){
                 colors[i] = org.jzy3d.colors.Color.RED;
             }
+            //If weight > 0, then set color to blue
             else{
                 colors[i] = Color.BLUE;
             }
