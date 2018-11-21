@@ -1,0 +1,7 @@
+----- Version 0.0.1.1 ----
+Basic functionality and 3d plotting
+Not sure if formulas are correct
+
+---- Version 0.0.1.2 ----
+Added elimination field for photons
+Different color in 3d plot for eliminated photons
