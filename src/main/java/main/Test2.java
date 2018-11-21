@@ -1,5 +1,10 @@
+package main;
+
+import main.objects.GasLayer;
+import main.objects.Photon;
 import org.jzy3d.colors.Color;
 import org.jzy3d.maths.Coord3d;
+import scatterFunctions.HenyeyGreensteinScatter;
 
 import java.util.ArrayList;
 
@@ -10,7 +15,7 @@ public class Test2 {
         int layers = 1;
 
         //Initialize the gas layer
-        GasLayer gasLayer = new GasLayer(100, 1, 0);
+        GasLayer gasLayer = new GasLayer(100, 1, 0, new HenyeyGreensteinScatter());
 
         System.out.println("Optical depth: " + gasLayer.getOpticalDepth());
 
@@ -27,7 +32,7 @@ public class Test2 {
 
             // TODO: Find out if the stepsize is the same of different for each packet.
             // Stepsize = -ln(random)/opticalDepth
-            //double stepSize = -Math.log(MyRandom.random())/gasLayer.getOpticalDepth();
+            //double stepSize = -Math.log(main.MyRandom.random())/gasLayer.getOpticalDepth();
 
 
             //Loop over all photon packets
@@ -52,7 +57,7 @@ public class Test2 {
                     cosTheta = 1.0 - 2.0 * MyRandom.random();
                 } else {
                     //Calculate scatter angle using Henyey-Greenstein phase function
-                    cosTheta = (1.0 / (2.0 * g)) * (1.0 + Math.pow(g, 2.0) - Math.pow((1.0 - Math.pow(g, 2.0)) / (1.0 - g + 2.0 * g * MyRandom.random()), 2.0));
+                    cosTheta = gasLayer.getScatterFunction().calculateAngle(g);
                 }
                 double polarAngle = 2.0 * Math.PI * MyRandom.random();
 

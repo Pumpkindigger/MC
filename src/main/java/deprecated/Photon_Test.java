@@ -1,3 +1,10 @@
+package deprecated;
+
+import main.objects.GasLayer;
+import main.MyRandom;
+import main.objects.Photon;
+import scatterFunctions.HenyeyGreensteinScatter;
+
 import java.util.ArrayList;
 
 public class Photon_Test {
@@ -6,12 +13,12 @@ public class Photon_Test {
         int nrPhotons = 1000000;
         int layers = 1;
 
-        GasLayer gasLayer = new GasLayer(10, 5, 0);
+        GasLayer gasLayer = new GasLayer(10, 5, 0, new HenyeyGreensteinScatter());
 
         System.out.println("Optical depth: " + gasLayer.getOpticalDepth());
 
         // Line 52 calcloc.f:
-        // l= (1.0/e(lold))*LOG(1.0/temp)
+        // l= (1.0/e(lold))*LOG(1.0/main)
 
         ArrayList<Photon> photons = new ArrayList<Photon>(nrPhotons);
 
@@ -22,8 +29,8 @@ public class Photon_Test {
         int photonsPassed = 0;
 
         for (Photon photon : photons){
-            //l= (1.0/e(lold))*LOG(1.0/temp)
-            double travelled = 1.0/(gasLayer.getOpticalDepth()) * Math.log(1.0/MyRandom.random());
+            //l= (1.0/e(lold))*LOG(1.0/main)
+            double travelled = 1.0/(gasLayer.getOpticalDepth()) * Math.log(1.0/ MyRandom.random());
             photon.updatePosition(travelled);
             //System.out.println(travelled);
             if (photon.getZ() > gasLayer.getGeometricalDepth()){

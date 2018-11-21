@@ -1,3 +1,6 @@
+package main.objects;
+
+import main.Constants;
 import org.jzy3d.maths.Coord3d;
 
 public class Photon {
@@ -118,7 +121,7 @@ public class Photon {
     //This is a temporary elimination function which should be replaced at some point.
     public void checkElimination(){
         if (this.weight < Constants.eliminationConstant){
-            //System.out.println("Photon eliminated");
+            //System.out.println("main.objects.Photon eliminated");
             this.weight = 0;
             this.eliminate();
         }
