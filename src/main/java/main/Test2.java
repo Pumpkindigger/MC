@@ -15,7 +15,7 @@ public class Test2 {
         int layers = 1;
 
         //Initialize the gas layer
-        GasLayer gasLayer = new GasLayer(100, 1, 0, new HenyeyGreensteinScatter());
+        GasLayer gasLayer = new GasLayer(100, 1, 0.9, new HenyeyGreensteinScatter());
 
         System.out.println("Optical depth: " + gasLayer.getOpticalDepth());
 
@@ -28,6 +28,7 @@ public class Test2 {
 
         int photonsPassed = 0;
         int nrBouncesLeft = Constants.maximumBounces;
+        double totalWeight = 0;
         while (nrBouncesLeft > 0) {
 
             // TODO: Find out if the stepsize is the same of different for each packet.
@@ -67,6 +68,7 @@ public class Test2 {
                 //Check if the photon has passed the gas layer, if so, set its weight to zero
                 if (photon.getZ() > gasLayer.getGeometricalDepth()) {
                     photonsPassed++;
+                    totalWeight += photon.getWeight();
                     photon.setZ(gasLayer.getGeometricalDepth());
                     photon.eliminate();
                 }
@@ -80,7 +82,9 @@ public class Test2 {
             }
             nrBouncesLeft--;
         }
+
         System.out.println(photonsPassed);
+        System.out.println(totalWeight);
 
         Coord3d[] coordinates = new Coord3d[photons.size()];
         org.jzy3d.colors.Color[] colors = new org.jzy3d.colors.Color[photons.size()];
