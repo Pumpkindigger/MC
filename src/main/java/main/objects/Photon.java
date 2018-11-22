@@ -176,9 +176,21 @@ public class Photon {
     }
 
 
-    //TODO fix this method
+    /**
+     * Calculates the angle of the photon to the center of mars (located at 0,0)
+     * It goes in a COUNTER CLOCKWISE manner, with North = 0*, East = 90* etc.
+     * @return the angle between the photon and Northpole of mars with the center of mars being (0,0)
+     */
     public double calculateOmega() {
-        return Math.atan(this.x / this.y);
+        double thetaClockwise =  Math.atan2(this.x, -this.y);
+        if (thetaClockwise < 0.0){
+            thetaClockwise += 2*Math.PI;
+        }
+        double theta = Math.toDegrees(thetaClockwise) - 180;
+        if (theta < 0.0){
+            theta += 360;
+        }
+        return theta;
     }
 
 
