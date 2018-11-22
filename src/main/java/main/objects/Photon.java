@@ -196,8 +196,15 @@ public class Photon {
         //Check if the radius of the photon is within the radius of the gaslayer
         if (gaslayer.getInnerR() < r && r < gaslayer.getOuterR()) {
             //Check if the angle of the photon is within the angles of the gaslayer
-            if (gaslayer.getRightOmega() < omega && r < gaslayer.getLeftOmega()) {
-                return 1;
+            if (gaslayer.getRightOmega() < gaslayer.getLeftOmega()) {
+                if (gaslayer.getRightOmega() < omega && r < gaslayer.getLeftOmega()) {
+                    return 1;
+                }
+            }
+            else {
+                if ((omega < gaslayer.getRightOmega() && omega < gaslayer.getLeftOmega()) || (omega > gaslayer.getRightOmega() && omega > gaslayer.getLeftOmega())){
+                    return 1;
+                }
             }
         }
         //Check if the photon has exited on the low side of the gaslayer
