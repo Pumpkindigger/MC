@@ -1,6 +1,6 @@
 package main;
 
-import main.objects.GasLayer;
+import main.objects.GasLayerBend2D;
 import main.objects.Photon;
 import org.jzy3d.colors.Color;
 import org.jzy3d.maths.Coord3d;
@@ -8,14 +8,14 @@ import scatterFunctions.HenyeyGreensteinScatter;
 
 import java.util.ArrayList;
 
-public class Test2 {
+public class SimulationBend {
 
     public static void main(String[] args) {
         int nrPhotons = 10000;
         int layers = 1;
 
         //Initialize the gas layer
-        GasLayer gasLayer = new GasLayer(100, 1, 0.9, new HenyeyGreensteinScatter());
+        GasLayerBend2D gasLayer = new GasLayerBend2D(Constants.radiusMars + 10000, Constants.radiusMars, 90, 0, 1000,0.0, new HenyeyGreensteinScatter());
 
         System.out.println("Optical depth: " + gasLayer.getOpticalDepth());
 
