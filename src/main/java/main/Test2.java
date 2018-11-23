@@ -4,7 +4,7 @@ import main.objects.GasLayer;
 import main.objects.Photon;
 import org.jzy3d.colors.Color;
 import org.jzy3d.maths.Coord3d;
-import scatterFunctions.HenyeyGreensteinScatter;
+import scatterFunctions.RayleighScatter;
 
 import java.util.ArrayList;
 
@@ -15,7 +15,7 @@ public class Test2 {
         int layers = 1;
 
         //Initialize the gas layer
-        GasLayer gasLayer = new GasLayer(100, 1, 0.9, new HenyeyGreensteinScatter());
+        GasLayer gasLayer = new GasLayer(100, 5, 0.0, new RayleighScatter());
 
         System.out.println("Optical depth: " + gasLayer.getOpticalDepth());
 
