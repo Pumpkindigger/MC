@@ -196,10 +196,16 @@ public class Photon {
 
     /**
      * This method will return a value indicative of if the photon is in the gaslayer or not.
-     * This method will return a 1 if the photon is still in the gaslayer.
      * This method will return a 0 if the photon exited the gaslayer on the "high" side of the gaslayer
+     * This method will return a 1 if the photon is still in the gaslayer.
      * This method will return a 2 if the photon exited the gaslayer on the "low" side of the gaslayer
+     * This method will return a 3 if the photon exited the gaslayer on the "left" side of the gaslayer
+     * This method will return a 4 if the photon exited the gaslayer on the "right" side of the gaslayer
      *
+     * NOTE: if the photon is both outside of the gaslayer on either the left or right side, but as well on the high or low side,
+     * the high or low side will have priority over the side.
+     *
+     * If this method returned a -1 something went wrong
      * @return
      */
     public int isInGasLayer(GasLayerBend2D gaslayer) {
@@ -223,8 +229,57 @@ public class Photon {
         if (r < gaslayer.getInnerR()) {
             return 2;
         }
-        //Photon must have exited the gaslayer on the high side
-        return 0;
+        //Check if the photon has exited on the high side of the gaslayer
+        if (r > gaslayer.getOuterR()){
+            return 0;
+        }
+        return checkAngle(gaslayer, omega);
+    }
+
+    /**
+     * NOTE: THIS METHOD HAS NOT THOROUGHLY BEEN TESTED, BUGS MIGHT BE PRESENT
+     *
+     * This method will return a 3 if the photon exited the gaslayer on the "left" side of the gaslayer
+     * This method will return a 4 if the photon exited the gaslayer on the "right" side of the gaslayer
+     * @return integer representative of the photons exit position
+     */
+    public int checkAngle(GasLayerBend2D gaslayer, double omega) {
+        //TODO check if this is correct
+        // The opposite angle here is the the angle 180 degrees from the angle in the middle of the two omega angles
+        double oppositeAngle;
+        double leftOmega = gaslayer.getLeftOmega();
+        double rightOmega = gaslayer.getRightOmega();
+        //Check if there is a wraparound
+        if (leftOmega < rightOmega) {
+            //If no wraparound, then the opposite angle is the half of the two angles, plus 180 degrees % 360
+            oppositeAngle = ((leftOmega + rightOmega) / 2 + 180) % 360;
+            //If the opposite angle is bigger than the the left omega, we use the left omega to check the location
+            if (oppositeAngle > leftOmega){
+                //If the photon is in between the left omega and the opposite angle, it has exited the gaslayer on the left
+                if (omega < oppositeAngle && omega > leftOmega){
+                    return 3;
+                }
+                //If the photon is not in between those angles, it exited the gaslayer on the right
+                else return 4;
+            }
+            else {
+                if (omega > oppositeAngle && omega < rightOmega){
+                    return 3;
+                }
+                else return 4;
+            }
+        }
+        else{
+            //If there is a wraparound the opposite angle is defined as leftomega + rightomega / 2
+            // (Note: 360 is redundant I think, but I left it just in case)
+            oppositeAngle = ((leftOmega + rightOmega) / 2) % 360;
+            //If the photon is in between the opposite angle and the left omega, then it has exited on the left
+            if (omega < oppositeAngle && omega > leftOmega){
+                return 3;
+            }
+            //If the photon is not in between those angles, it exited the gaslayer on the right
+            else return 4;
+        }
     }
 
 }

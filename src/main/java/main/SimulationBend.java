@@ -2,11 +2,11 @@ package main;
 
 import main.objects.GasLayerBend2D;
 import main.objects.Photon;
-import org.jzy3d.colors.Color;
-import org.jzy3d.maths.Coord3d;
 import scatterFunctions.HenyeyGreensteinScatter;
 
 import java.util.ArrayList;
+
+import static main.Simulation3D.plotResult;
 
 public class SimulationBend {
 
@@ -15,7 +15,7 @@ public class SimulationBend {
         int layers = 1;
 
         //Initialize the gas layer
-        GasLayerBend2D gasLayer = new GasLayerBend2D(Constants.radiusMars + 10000, Constants.radiusMars, 90, 0, 1000,0.0, new HenyeyGreensteinScatter());
+        GasLayerBend2D gasLayer = new GasLayerBend2D(Constants.radiusMars + 10000, Constants.radiusMars, 90, 0, 10, 0.0, new HenyeyGreensteinScatter());
 
         System.out.println("Optical depth: " + gasLayer.getOpticalDepth());
 
@@ -30,15 +30,9 @@ public class SimulationBend {
         int nrBouncesLeft = Constants.maximumBounces;
         double totalWeight = 0;
         while (nrBouncesLeft > 0) {
-
-            // TODO: Find out if the stepsize is the same of different for each packet.
-            // Stepsize = -ln(random)/opticalDepth
-            //double stepSize = -Math.log(main.MyRandom.random())/gasLayer.getOpticalDepth();
-
-
             //Loop over all photon packets
             for (Photon photon : photons) {
-                //If the weight of the proton is 0, then we no longer have to perform operations on it.
+                //If the proton is eliminated, then we no longer have to perform operations on it.
                 if (photon.isEliminated()) {
                     continue;
                 }
@@ -46,11 +40,37 @@ public class SimulationBend {
 
                 //TODO check position of the photon
                 //Check if the photon has passed the gas layer, if so, set its weight to zero
+                int position = photon.isInGasLayer(gasLayer);
+                switch (position) {
+                    //If 0, then the photon has exited the gaslayer on the high side, we for now eliminate the photon
+                    case 0:
+                        photon.eliminate();
+                        //TODO limit the dimensions of the photon to the outer layer of the gaslayer
+                        break;
+                    //If 1, then the photon is still in the gaslayer, so we only have to check if we should eliminate the photon
+                    case 1:
+                        photon.checkElimination();
+                        break;
+                    //If 2, then the photon has exited the gaslayer on the low side, we check if it should be eliminated and set the current layer to += -1
+                    case 2:
+                        //TODO limit the dimensions of the photon to the outer layer of the gaslayer
+                        photon.checkElimination();
+                        photon.setCurrentLayer(photon.getCurrentLayer()-1);
+                        totalWeight += photon.getWeight();
+                        photonsPassed++;
+                        break;
 
-                //Check if the photon has exited the gas layer on the opposite site
-
-
-                photon.checkElimination();
+                    //TODO: implement these cases correctly
+                    case 3:
+                        photon.eliminate();
+                        break;
+                    case 4:
+                        photon.eliminate();
+                        break;
+                    default:
+                        System.out.println(position);
+                        throw new IllegalStateException("Photon is neither in a gaslayer, or has exited it");
+                }
             }
             nrBouncesLeft--;
         }
@@ -58,34 +78,7 @@ public class SimulationBend {
         System.out.println(photonsPassed);
         System.out.println(totalWeight);
 
-        Coord3d[] coordinates = new Coord3d[photons.size()];
-        org.jzy3d.colors.Color[] colors = new org.jzy3d.colors.Color[photons.size()];
-
-        //For each photon, first limit its dimensions and then transform it into a coordinate
-        for (int i = 0; i < photons.size(); i++) {
-            photons.get(i).limitDimensions1D(gasLayer.getGeometricalDepth()*2);
-            coordinates[i] = photons.get(i).toCoordinate();
-            //If the photon has a weight of 0, set the color to red
-            if (photons.get(i).getWeight() == 0){
-                colors[i] = org.jzy3d.colors.Color.RED;
-            }
-            //If weight > 0, then set color to blue
-            else{
-                colors[i] = Color.BLUE;
-            }
-        }
-
-        //This plotter will on init draw the plot with the given coordinates
-        Plotter3D plotter3D = new Plotter3D(coordinates, colors);
-
-        //Calculate the expected number of photons which will pass through the gaslayer using the Lambert-Beer Law
-        double expected = nrPhotons * Math.exp(-gasLayer.getOpticalDepth());
-
-        System.out.println("Nr of photons passed by formula: " + expected);
-
-        //Calculate the error rate of my model vs the theoretical number
-        double error = expected / photonsPassed;
-        System.out.println("Error factor: " + error);
+        plotResult(nrPhotons, gasLayer, photons, photonsPassed);
 
     }
 }

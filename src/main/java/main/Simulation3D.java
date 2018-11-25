@@ -61,8 +61,13 @@ public class Simulation3D {
         System.out.println(photonsPassed);
         System.out.println(totalWeight);
 
+        plotResult(nrPhotons, gasLayer, photons, photonsPassed);
+
+    }
+
+    public static void plotResult(int nrPhotons, GasLayerAbstract gasLayer, ArrayList<Photon> photons, int photonsPassed) {
         Coord3d[] coordinates = new Coord3d[photons.size()];
-        org.jzy3d.colors.Color[] colors = new org.jzy3d.colors.Color[photons.size()];
+        Color[] colors = new Color[photons.size()];
 
         //For each photon, first limit its dimensions and then transform it into a coordinate
         for (int i = 0; i < photons.size(); i++) {
@@ -70,7 +75,7 @@ public class Simulation3D {
             coordinates[i] = photons.get(i).toCoordinate();
             //If the photon has a weight of 0, set the color to red
             if (photons.get(i).getWeight() == 0){
-                colors[i] = org.jzy3d.colors.Color.RED;
+                colors[i] = Color.RED;
             }
             //If weight > 0, then set color to blue
             else{
@@ -89,7 +94,6 @@ public class Simulation3D {
         //Calculate the error rate of my model vs the theoretical number
         double error = expected / photonsPassed;
         System.out.println("Error factor: " + error);
-
     }
 
     public static void performStep(GasLayerAbstract gasLayer, Photon photon) {
