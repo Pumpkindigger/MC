@@ -23,7 +23,7 @@ public class SimulationBend {
 
         //Create all the protons
         for (int i = 0; i < nrPhotons; i++) {
-            photons.add(new Photon(layers));
+            photons.add(new Photon(layers, Constants.radiusMars + 10000, 45));
         }
 
         int photonsPassed = 0;

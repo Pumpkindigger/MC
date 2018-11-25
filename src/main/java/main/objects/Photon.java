@@ -51,15 +51,15 @@ public class Photon {
     }
 
     //Constructor for 2D analysis for bend gas layer
-    public Photon(double x, double y, int currentLayer, double weight) {
-        this.x = x;
-        this.y = y;
+    public Photon(int currentLayer, int radius, int omega) {
+        this.x = -Math.sin(omega)*radius;
+        this.y = Math.cos(omega)*radius;
         this.z = 0.0;
         this.currentLayer = currentLayer;
         this.v_x = 1.0;
         this.v_y = 0.0;
         this.v_z = 0.0;
-        this.weight = weight;
+        this.weight = Constants.startingWeight;
         this.nrBounced = 0;
         this.eliminated = false;
     }
@@ -250,7 +250,7 @@ public class Photon {
         double leftOmega = gaslayer.getLeftOmega();
         double rightOmega = gaslayer.getRightOmega();
         //Check if there is a wraparound
-        if (leftOmega < rightOmega) {
+        if (leftOmega > rightOmega) {
             //If no wraparound, then the opposite angle is the half of the two angles, plus 180 degrees % 360
             oppositeAngle = ((leftOmega + rightOmega) / 2 + 180) % 360;
             //If the opposite angle is bigger than the the left omega, we use the left omega to check the location
@@ -272,7 +272,7 @@ public class Photon {
         else{
             //If there is a wraparound the opposite angle is defined as leftomega + rightomega / 2
             // (Note: 360 is redundant I think, but I left it just in case)
-            oppositeAngle = ((leftOmega + rightOmega) / 2) % 360;
+            oppositeAngle = ((leftOmega + rightOmega) / 2);
             //If the photon is in between the opposite angle and the left omega, then it has exited on the left
             if (omega < oppositeAngle && omega > leftOmega){
                 return 3;
