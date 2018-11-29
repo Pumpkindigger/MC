@@ -11,11 +11,11 @@ import static main.Simulation3D.plotResult;
 public class SimulationBend {
 
     public static void main(String[] args) {
-        int nrPhotons = 10000;
+        int nrPhotons = 50000;
         int layers = 1;
 
         //Initialize the gas layer
-        GasLayerBend2D gasLayer = new GasLayerBend2D(Constants.radiusMars + 10000, Constants.radiusMars, 90, 0, 10, 0.0, new HenyeyGreensteinScatter());
+        GasLayerBend2D gasLayer = new GasLayerBend2D(10, 5, 90, 0, 10, 0.0, new HenyeyGreensteinScatter());
 
         System.out.println("Optical depth: " + gasLayer.getOpticalDepth());
 
@@ -23,7 +23,7 @@ public class SimulationBend {
 
         //Create all the protons
         for (int i = 0; i < nrPhotons; i++) {
-            photons.add(new Photon(layers, Constants.radiusMars + 10000, 45));
+            photons.add(new Photon(layers, 10, 45));
         }
 
         int photonsPassed = 0;
@@ -38,7 +38,7 @@ public class SimulationBend {
                 }
                 Simulation3D.performStep(gasLayer, photon);
 
-                //TODO check position of the photon
+                //TODO perform correct position adjustments when photon is no longer in gaslayer
                 //Check if the photon has passed the gas layer, if so, set its weight to zero
                 int position = photon.isInGasLayer(gasLayer);
                 switch (position) {
@@ -58,6 +58,7 @@ public class SimulationBend {
                         photon.setCurrentLayer(photon.getCurrentLayer()-1);
                         totalWeight += photon.getWeight();
                         photonsPassed++;
+                        photon.madeIt();
                         break;
 
                     //TODO: implement these cases correctly
@@ -69,7 +70,7 @@ public class SimulationBend {
                         break;
                     default:
                         System.out.println(position);
-                        throw new IllegalStateException("Photon is neither in a gaslayer, or has exited it");
+                        throw new IllegalStateException("Photon is neither in a gaslayer, nor has exited it");
                 }
             }
             nrBouncesLeft--;

@@ -5,6 +5,7 @@ import main.objects.GasLayerAbstract;
 import main.objects.Photon;
 import org.jzy3d.colors.Color;
 import org.jzy3d.maths.Coord3d;
+import scatterFunctions.HenyeyGreensteinScatter;
 import scatterFunctions.RayleighScatter;
 
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ public class Simulation3D {
         int layers = 1;
 
         //Initialize the gas layer
-        GasLayer gasLayer = new GasLayer(100, 5, 0.0, new RayleighScatter());
+        GasLayer gasLayer = new GasLayer(100, 5, 0.0, new HenyeyGreensteinScatter());
 
         System.out.println("Optical depth: " + gasLayer.getOpticalDepth());
 
@@ -45,7 +46,7 @@ public class Simulation3D {
                     photonsPassed++;
                     totalWeight += photon.getWeight();
                     photon.setZ(gasLayer.getGeometricalDepth());
-                    photon.eliminate();
+                    photon.madeIt();
                 }
                 //Check if the photon has exited the gas layer on the opposite site
                 if (photon.getZ() < 0) {
@@ -74,7 +75,7 @@ public class Simulation3D {
             photons.get(i).limitDimensions1D(gasLayer.getGeometricalDepth()*2);
             coordinates[i] = photons.get(i).toCoordinate();
             //If the photon has a weight of 0, set the color to red
-            if (photons.get(i).getWeight() == 0){
+            if (!photons.get(i).getMadeIt()){
                 colors[i] = Color.RED;
             }
             //If weight > 0, then set color to blue

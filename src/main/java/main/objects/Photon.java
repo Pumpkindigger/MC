@@ -21,6 +21,7 @@ public class Photon {
     private double weight;
     private int nrBounced;
     private boolean eliminated;
+    private boolean madeIt;
 
     //Constructor including all the fields
     public Photon(double x, double y, double z, int currentLayer, double v_x, double v_y, double v_z, double weight, int nrBounced, boolean eliminated) {
@@ -34,6 +35,7 @@ public class Photon {
         this.weight = weight;
         this.nrBounced = nrBounced;
         this.eliminated = eliminated;
+        this.madeIt = false;
     }
 
     //Default constructor for 1D analysis, only in the z direction
@@ -48,12 +50,13 @@ public class Photon {
         this.weight = Constants.startingWeight;
         this.nrBounced = 0;
         this.eliminated = false;
+        this.madeIt = false;
     }
 
     //Constructor for 2D analysis for bend gas layer
     public Photon(int currentLayer, int radius, int omega) {
-        this.x = -Math.sin(omega)*radius;
-        this.y = Math.cos(omega)*radius;
+        this.x = -Math.sin(Math.toRadians(omega))*radius;
+        this.y = Math.cos(Math.toRadians(omega))*radius;
         this.z = 0.0;
         this.currentLayer = currentLayer;
         this.v_x = 1.0;
@@ -62,6 +65,7 @@ public class Photon {
         this.weight = Constants.startingWeight;
         this.nrBounced = 0;
         this.eliminated = false;
+        this.madeIt = false;
     }
 
     public int getCurrentLayer() {
@@ -94,6 +98,17 @@ public class Photon {
 
     public void eliminate() {
         this.eliminated = true;
+    }
+
+    public void madeIt() {
+        if(!this.eliminated){
+            this.madeIt =true;
+            this.eliminate();
+        }
+    }
+
+    public boolean getMadeIt(){
+        return this.madeIt;
     }
 
     public void updatePosition(double delta) {
@@ -250,7 +265,7 @@ public class Photon {
         double leftOmega = gaslayer.getLeftOmega();
         double rightOmega = gaslayer.getRightOmega();
         //Check if there is a wraparound
-        if (leftOmega > rightOmega) {
+        if (leftOmega < rightOmega) {
             //If no wraparound, then the opposite angle is the half of the two angles, plus 180 degrees % 360
             oppositeAngle = ((leftOmega + rightOmega) / 2 + 180) % 360;
             //If the opposite angle is bigger than the the left omega, we use the left omega to check the location
