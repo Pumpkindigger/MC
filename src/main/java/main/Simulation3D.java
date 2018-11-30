@@ -5,7 +5,6 @@ import main.objects.GasLayerAbstract;
 import main.objects.Photon;
 import org.jzy3d.colors.Color;
 import org.jzy3d.maths.Coord3d;
-import scatterFunctions.HenyeyGreensteinScatter;
 import scatterFunctions.RayleighScatter;
 
 import java.util.ArrayList;
@@ -17,7 +16,7 @@ public class Simulation3D {
         int layers = 1;
 
         //Initialize the gas layer
-        GasLayer gasLayer = new GasLayer(100, 5, 0.0, new HenyeyGreensteinScatter());
+        GasLayer gasLayer = new GasLayer(100, 5, 0.0, new RayleighScatter());
 
         System.out.println("Optical depth: " + gasLayer.getOpticalDepth());
 
@@ -62,24 +61,24 @@ public class Simulation3D {
         System.out.println(photonsPassed);
         System.out.println(totalWeight);
 
-        plotResult(nrPhotons, gasLayer, photons, photonsPassed);
+        plotResult(nrPhotons, gasLayer, photons);
 
     }
 
-    public static void plotResult(int nrPhotons, GasLayerAbstract gasLayer, ArrayList<Photon> photons, int photonsPassed) {
+    public static void plotResult(int nrPhotons, GasLayerAbstract gasLayer, ArrayList<Photon> photons) {
         Coord3d[] coordinates = new Coord3d[photons.size()];
         Color[] colors = new Color[photons.size()];
 
         //For each photon, first limit its dimensions and then transform it into a coordinate
         for (int i = 0; i < photons.size(); i++) {
-            photons.get(i).limitDimensions1D(gasLayer.getGeometricalDepth()*2);
+            photons.get(i).limitDimensions1D(gasLayer.getGeometricalDepth() * 2);
             coordinates[i] = photons.get(i).toCoordinate();
             //If the photon has a weight of 0, set the color to red
-            if (!photons.get(i).getMadeIt()){
+            if (!photons.get(i).getMadeIt()) {
                 colors[i] = Color.RED;
             }
             //If weight > 0, then set color to blue
-            else{
+            else {
                 colors[i] = Color.BLUE;
             }
         }
@@ -93,14 +92,22 @@ public class Simulation3D {
         System.out.println("Nr of photons passed by formula: " + expected);
 
         //Calculate the error rate of my model vs the theoretical number
-        double error = expected / photonsPassed;
-        System.out.println("Error factor: " + error);
+        //double error = expected / photonsPassed;
+        //System.out.println("Error factor: " + error);
     }
 
+    /**
+     * Performs 1 step of a single photon through the atmosphere
+     *
+     * @param gasLayer The gaslayer through which the photon passes
+     * @param photon   The photon which passes through the gaslayer
+     * @return The old coordinate of the photon.
+     */
     public static void performStep(GasLayerAbstract gasLayer, Photon photon) {
         //Get a random stepsize which is based on the optical depth
         double stepSize = -Math.log(MyRandom.random()) / gasLayer.getOpticalDepth();
 
+        //System.out.println(stepSize);
         //Update the position of the photon using the stepsize.
         photon.updatePosition(stepSize);
 
@@ -110,12 +117,10 @@ public class Simulation3D {
         double cosTheta;
         double g = gasLayer.getG();
         //If g = 0, we have isotropic scattering and can thus pick a random angle between -1 and 1
-        if (g == 0) {
-            cosTheta = 1.0 - 2.0 * MyRandom.random();
-        } else {
-            //Calculate scatter angle using Henyey-Greenstein phase function
-            cosTheta = gasLayer.getScatterFunction().calculateAngle(g);
-        }
+
+        //Calculate scatter angle using the phase function of gaslayer
+        cosTheta = gasLayer.getScatterFunction().calculateAngle(g);
+
         double polarAngle = 2.0 * Math.PI * MyRandom.random();
 
         //Update the new cosine angles of the velocities

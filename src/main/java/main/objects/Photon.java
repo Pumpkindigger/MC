@@ -1,14 +1,18 @@
 package main.objects;
 
+import org.jzy3d.maths.Pair;
 import main.Constants;
+import main.Coordinate;
+import main.PositionEnum;
 import org.jzy3d.maths.Coord3d;
+
+import java.util.ArrayList;
 
 public class Photon {
 
     //Position parameters
-    private double x;
-    private double y;
-    private double z;
+    private Coordinate oldCoordinate;
+    private Coordinate currentCoordinate;
 
     private int currentLayer;
 
@@ -24,10 +28,9 @@ public class Photon {
     private boolean madeIt;
 
     //Constructor including all the fields
-    public Photon(double x, double y, double z, int currentLayer, double v_x, double v_y, double v_z, double weight, int nrBounced, boolean eliminated) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
+    public Photon(Coordinate coordinate, int currentLayer, double v_x, double v_y, double v_z, double weight, int nrBounced, boolean eliminated) {
+        this.oldCoordinate = null;
+        this.currentCoordinate = coordinate;
         this.currentLayer = currentLayer;
         this.v_x = v_x;
         this.v_y = v_y;
@@ -40,9 +43,8 @@ public class Photon {
 
     //Default constructor for 1D analysis, only in the z direction
     public Photon(int currentLayer) {
-        this.x = 0;
-        this.y = 0;
-        this.z = 0;
+        this.oldCoordinate = null;
+        this.currentCoordinate = new Coordinate(0.0, 0.0, 0.0);
         this.currentLayer = currentLayer;
         this.v_x = 0;
         this.v_y = 0;
@@ -55,9 +57,8 @@ public class Photon {
 
     //Constructor for 2D analysis for bend gas layer
     public Photon(int currentLayer, int radius, int omega) {
-        this.x = -Math.sin(Math.toRadians(omega))*radius;
-        this.y = Math.cos(Math.toRadians(omega))*radius;
-        this.z = 0.0;
+        this.oldCoordinate = null;
+        this.currentCoordinate = new Coordinate(-Math.sin(Math.toRadians(omega)) * radius, Math.cos(Math.toRadians(omega)) * radius, 0.0);
         this.currentLayer = currentLayer;
         this.v_x = 1.0;
         this.v_y = 0.0;
@@ -77,7 +78,7 @@ public class Photon {
     }
 
     public double getZ() {
-        return this.z;
+        return this.currentCoordinate.getZ();
     }
 
     public double getWeight() {
@@ -89,7 +90,7 @@ public class Photon {
     }
 
     public void setZ(double z) {
-        this.z = z;
+        this.currentCoordinate.setZ(z);
     }
 
     public boolean isEliminated() {
@@ -101,20 +102,23 @@ public class Photon {
     }
 
     public void madeIt() {
-        if(!this.eliminated){
-            this.madeIt =true;
+        checkElimination();
+        if (!this.eliminated) {
+            this.madeIt = true;
             this.eliminate();
         }
     }
 
-    public boolean getMadeIt(){
+    public boolean getMadeIt() {
         return this.madeIt;
     }
 
+    //Returns the old coordinate of the photon and updates the current coordinate
     public void updatePosition(double delta) {
-        this.x = x + delta * v_x;
-        this.y = y + delta * v_y;
-        this.z = z + delta * v_z;
+        oldCoordinate = new Coordinate(currentCoordinate.getX(), currentCoordinate.getY(), currentCoordinate.getZ());
+        this.currentCoordinate.setX(oldCoordinate.getX() + delta * v_x);
+        this.currentCoordinate.setY(oldCoordinate.getY() + delta * v_y);
+        this.currentCoordinate.setZ(oldCoordinate.getZ() + delta * v_z);
     }
 
     //Calculate the new cosine angles for the velocity
@@ -162,50 +166,263 @@ public class Photon {
 
     public Coord3d toCoordinate() {
         Coord3d res = new Coord3d();
-        res.set((float) this.x, (float) this.y, (float) this.z);
+        res.set((float) this.currentCoordinate.getX(), (float) this.currentCoordinate.getY(), (float) this.currentCoordinate.getZ());
         return res;
     }
 
     //Limits the dimensions of the photon
+    //This is only called when plotting the photons when the simulation is done
     public void limitDimensions1D(double size) {
-        if (x < -size) {
-            x = -size;
-        } else if (x > size) {
-            x = size;
+        if (currentCoordinate.getX() < -size) {
+            currentCoordinate.setX(-size);
+        } else if (currentCoordinate.getX() > size) {
+            currentCoordinate.setX(size);
         }
-        if (y < -size) {
-            y = -size;
-        } else if (y > size) {
-            y = size;
+        if (currentCoordinate.getY() < -size) {
+            currentCoordinate.setY(-size);
+        } else if (currentCoordinate.getY() > size) {
+            currentCoordinate.setY(size);
         }
         //Z is already bounded when it exits the gas layer
     }
 
     /**
-     * This mehtod calculates the radius of the center of mars to the photon
+     * This mehtod calculates the radius of the center of mars to the photon in a plane.
+     * This means the Z-Coordinate is left out of the formula
      *
      * @return the radius of the center of mars to the photon
      */
     public double calculateR() {
-        return Math.sqrt(this.x * this.x + this.y * this.y);
+        return Math.sqrt(this.currentCoordinate.getX() * this.currentCoordinate.getX() + this.currentCoordinate.getY() * this.currentCoordinate.getY());
     }
 
 
     /**
      * Calculates the angle of the photon to the center of mars (located at 0,0)
      * It goes in a COUNTER CLOCKWISE manner, with North = 0*, East = 90* etc.
+     *
      * @return the angle between the photon and Northpole of mars with the center of mars being (0,0)
      */
-    public double calculateOmega() {
-        double thetaClockwise =  Math.atan2(this.x, -this.y);
-        if (thetaClockwise < 0.0){
-            thetaClockwise += 2*Math.PI;
+    public double calculateOmega(Coordinate coordinate) {
+        double thetaClockwise = Math.atan2(coordinate.getX(), -coordinate.getY());
+        if (thetaClockwise < 0.0) {
+            thetaClockwise += 2 * Math.PI;
         }
         double theta = Math.toDegrees(thetaClockwise) - 180;
-        if (theta < 0.0){
+        if (theta < 0.0) {
             theta += 360;
         }
         return theta;
+    }
+
+
+//    /**
+//     * This method will check whether the photon is directly above, inside or (anywhere) outside the gaslayer (apart from directly abo)
+//     *
+//     * @param gaslayer
+//     * @return
+//     */
+//    public PositionEnum isInGasLayer(GasLayerBend2D gaslayer) {
+//        double r = this.calculateR();
+//        double omega = this.calculateOmega();
+//        if (gaslayer.getInnerR() < r && r < gaslayer.getOuterR()) {
+//            //Check if the angle of the photon is within the angles of the gaslayer
+//            if (checkInsideAngle(gaslayer, omega)) return PositionEnum.INSIDE;
+//        }
+//        if (r > gaslayer.getOuterR()) {
+//            //Check if the angle of the photon is within the angles of the gaslayer
+//            if (checkInsideAngle(gaslayer, omega)) return PositionEnum.ABOVE;
+//        }
+//        return PositionEnum.OUTSIDE;
+//    }
+
+    public boolean checkInsideAngle(GasLayerBend2D gaslayer, double omega) {
+        if (gaslayer.getRightOmega() < gaslayer.getLeftOmega()) {
+            return gaslayer.getRightOmega() < omega && omega < gaslayer.getLeftOmega();
+        } else {
+            return (omega < gaslayer.getRightOmega() && omega < gaslayer.getLeftOmega()) || (omega > gaslayer.getRightOmega() && omega > gaslayer.getLeftOmega());
+        }
+    }
+
+    /**
+     * This method will check if the photon has passed a boundary of a gaslayer and put the currentCoordinate to the edge of the layer when it .
+     * It will check the if of a line which goes through the old and new coordinate of the photon crosses the boundaries of the gaslayer in a 2D plane.
+     *
+     * @param gaslayer the gaslayer which the photon is currently traveling through
+     */
+    public void backTrack(GasLayerBend2D gaslayer) {
+        //First calculate all the intersection points
+        ArrayList<Coordinate> intersections = getIntersectionPoints(gaslayer);
+
+        //In order to see whether the photon has actually left the gaslayer,
+        // we check for all of the intersection points lays in between the old and new coordinates of the photon.
+        // If this is the case at least once, then the photon has left the gaslayer
+        ArrayList<Pair<Double, Coordinate>> distancesIntersections = new ArrayList<Pair<Double, Coordinate>>();
+        for (Coordinate intersection : intersections) {
+            //If the intersection is in between the old and new position, the photon has passed the intersection
+            if (checkInBetween(intersection)) {
+                //Calculate the distance between the intersection point and the old position
+                double distance = calculateXYDistance(oldCoordinate, intersection);
+                distancesIntersections.add(new Pair<Double, Coordinate>(distance, intersection));
+            }
+        }
+        //If there are no intersections in between the old and new position, the photon is still inside the current gaslayer radius wise.
+        //Now we only need to perform an angle check.
+        Coordinate closestIntersection = null;
+        if(!(distancesIntersections.size() == 0)){
+            double minDistance = Double.MAX_VALUE;
+            for (Pair<Double, Coordinate> pair: distancesIntersections) {
+                if(pair.a < minDistance){
+                    closestIntersection = pair.b;
+                }
+            }
+        } else {
+            closestIntersection = currentCoordinate;
+        }
+
+        double omega = calculateOmega(closestIntersection);
+
+        Coordinate finalPos = null;
+
+        //Limit the angle to the angles of the gaslayer if necessary
+        if (!checkInsideAngle(gaslayer, omega)){
+            switch (leftOrRight(gaslayer, omega)){
+                case RIGHT:
+                    finalPos = limitAngle(closestIntersection, gaslayer.getRightOmega(), gaslayer.getOuterR());
+                    break;
+                case LEFT:
+                    finalPos = limitAngle(closestIntersection, gaslayer.getLeftOmega(), gaslayer.getOuterR());
+                    break;
+            }
+        }
+
+        //TODO only adjust z when necessary
+        adjustZ(finalPos);
+
+        currentCoordinate.setX(finalPos.getX());
+        currentCoordinate.setY(finalPos.getY());
+        currentCoordinate.setX(finalPos.getZ());
+    }
+
+    /**
+     * Calculates the intersection of the line from coordinate to the old position of the photon,
+     * and the line from origin to the point at angle omega at distance r.
+     *
+     * Implements finite line-line intersection described here:
+     * https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection
+     *
+     * @param coordinate the coordinate from which L1 goes to the old position
+     * @param omega the angle to which we want to limit
+     * @param r the distance of point x3,y3
+     */
+    public Coordinate limitAngle(Coordinate coordinate, double omega, double r) {
+        double x1 = oldCoordinate.getX();
+        double y1 = oldCoordinate.getY();
+        double x2 = coordinate.getX();
+        double y2 = coordinate.getY();
+        double x3 = -Math.sin(Math.toRadians(omega)) * r;
+        double y3 = Math.cos(Math.toRadians(omega)) * r;
+        //Note that point 4 is (0,0), this simplifies the equation
+
+        double x = ((x1*y2 - y1*x2)*(x3))/((x1-x2)*(y3) - (y1-y2)*(x3));
+        double y = ((x1*y2 - y1*x2)*(y3))/((x1-x2)*(y3) - (y1-y2)*(x3));
+
+        return new Coordinate(x, y, 0.0);
+    }
+
+    /**
+     * Takes in 2 coordinates and calculates the distance between them on the XY plane
+     * @param coordinate1 the first coordinate
+     * @param coordinate2 the second coordinate
+     * @return the distance between coordinate1 and coordinate2
+     */
+    public double calculateXYDistance(Coordinate coordinate1, Coordinate coordinate2){
+        return Math.sqrt(Math.pow((coordinate1.getX() - coordinate2.getX()), 2) + Math.pow((coordinate1.getY() - coordinate2.getY()), 2));
+    }
+
+    /**
+     * Adjusts the Z value of the input coordinate to be in line with the old and current Coordinate of the photon
+     * @param coordinate The coordinate of which the Z must be adjusted
+     */
+    public void adjustZ(Coordinate coordinate){
+        double distanceOldToCoord = calculateXYDistance(oldCoordinate, coordinate);
+        double distanceOldToNew = calculateXYDistance(oldCoordinate, currentCoordinate);
+
+        double dZ = currentCoordinate.getZ() - oldCoordinate.getZ();
+        double newZ = oldCoordinate.getZ() + dZ * distanceOldToCoord/distanceOldToNew;
+
+        coordinate.setZ(newZ);
+    }
+
+    /**
+     *  Checks if the intersection point lays in between the old and new coordinates of the photon
+     *  https://stackoverflow.com/questions/11907947/how-to-check-if-a-point-lies-on-a-line-between-2-other-points
+     * @param coordinate the point of intersection
+     * @return true if the intersection lays between the old and new position, false if not
+     */
+    public boolean checkInBetween(Coordinate coordinate) {
+        double dxl = currentCoordinate.getX() - oldCoordinate.getX();
+        double dyl = currentCoordinate.getY() - oldCoordinate.getY();
+
+        boolean horizontal = Math.abs(dxl) >= Math.abs(dyl);
+        if (horizontal) {
+            return dxl > 0 ? (oldCoordinate.getX() <= coordinate.getX() && coordinate.getX() <= currentCoordinate.getX())
+                    : (currentCoordinate.getX() <= coordinate.getX() && coordinate.getX() <= oldCoordinate.getX());
+        } else {
+            return dyl > 0 ? (oldCoordinate.getY() <= coordinate.getY() && coordinate.getY() <= currentCoordinate.getY())
+                    : (currentCoordinate.getY() <= coordinate.getY() && coordinate.getY() <= oldCoordinate.getY());
+        }
+    }
+
+    /**
+     * This method uses the intersection method described here:
+     * http://mathworld.wolfram.com/Circle-LineIntersection.html
+     * @param gaslayer the gaslayer with which we check an intersection
+     * @return a list of intersection coordinates
+     */
+    public ArrayList<Coordinate> getIntersectionPoints(GasLayerBend2D gaslayer) {
+        //Calculate necessary variables
+        double dx = currentCoordinate.getX() - oldCoordinate.getX();
+        double dy = currentCoordinate.getY() - oldCoordinate.getY();
+        double dr = Math.sqrt(dx * dx + dy * dy);
+        double d = oldCoordinate.getX() * currentCoordinate.getY() - currentCoordinate.getX() * oldCoordinate.getY();
+
+        double sgn;
+        if (dy < 0) {
+            sgn = -1;
+        } else {
+            sgn = 1;
+        }
+
+        //Check intersection with the outer layer
+        //Note that we always have 2 intersections with the outer layer.
+        //Not sure if sgn or sgn*dy, will test this!!!!TODO
+        double intersecOuterX1 = (d * dy + sgn * dx * Math.sqrt(gaslayer.getOuterR() * dr * dr - (d * d))) / (dr * dr);
+        double intersecOuterX2 = (d * dy - sgn * dx * Math.sqrt(gaslayer.getOuterR() * dr * dr - (d * d))) / (dr * dr);
+        double intersecOuterY1 = (-d * dx + Math.abs(dy) * Math.sqrt(gaslayer.getOuterR() * dr * dr - (d * d))) / (dr * dr);
+        double intersecOuterY2 = (-d * dx - Math.abs(dy) * Math.sqrt(gaslayer.getOuterR() * dr * dr - (d * d))) / (dr * dr);
+
+        //Check intersection with the inner layer
+        //Here we can have the situation where we have no intersections, so we check this first.
+        double discriminant = gaslayer.getInnerR() * gaslayer.getInnerR() * dr * dr - d * d;
+        double intersecInnerX1 = 0.0;
+        double intersecInnerY1 = 0.0;
+        double intersecInnerX2 = 0.0;
+        double intersecInnerY2 = 0.0;
+        if (discriminant > 0) {
+            intersecInnerX1 = (d * dy + sgn * dx * Math.sqrt(gaslayer.getInnerR() * dr * dr - (d * d))) / (dr * dr);
+            intersecInnerX2 = (d * dy - sgn * dx * Math.sqrt(gaslayer.getInnerR() * dr * dr - (d * d))) / (dr * dr);
+            intersecInnerY1 = (-d * dx + Math.abs(dy) * Math.sqrt(gaslayer.getInnerR() * dr * dr - (d * d))) / (dr * dr);
+            intersecInnerY2 = (-d * dx - Math.abs(dy) * Math.sqrt(gaslayer.getInnerR() * dr * dr - (d * d))) / (dr * dr);
+        }
+        //Since Z is irrelavent in this situation, we simply set z to 0.0
+        ArrayList<Coordinate> res = new ArrayList<Coordinate>();
+        res.add(new Coordinate(intersecOuterX1, intersecOuterY1, 0.0));
+        res.add(new Coordinate(intersecOuterX2, intersecOuterY2, 0.0));
+        res.add(new Coordinate(intersecInnerX1, intersecInnerY1, 0.0));
+        res.add(new Coordinate(intersecInnerX2, intersecInnerY2, 0.0));
+
+        return res;
     }
 
 
@@ -223,42 +440,42 @@ public class Photon {
      * If this method returned a -1 something went wrong
      * @return
      */
-    public int isInGasLayer(GasLayerBend2D gaslayer) {
-        double r = this.calculateR();
-        double omega = this.calculateOmega();
-        //Check if the radius of the photon is within the radius of the gaslayer
-        if (gaslayer.getInnerR() < r && r < gaslayer.getOuterR()) {
-            //Check if the angle of the photon is within the angles of the gaslayer
-            if (gaslayer.getRightOmega() < gaslayer.getLeftOmega()) {
-                if (gaslayer.getRightOmega() < omega && r < gaslayer.getLeftOmega()) {
-                    return 1;
-                }
-            }
-            else {
-                if ((omega < gaslayer.getRightOmega() && omega < gaslayer.getLeftOmega()) || (omega > gaslayer.getRightOmega() && omega > gaslayer.getLeftOmega())){
-                    return 1;
-                }
-            }
-        }
-        //Check if the photon has exited on the low side of the gaslayer
-        if (r < gaslayer.getInnerR()) {
-            return 2;
-        }
-        //Check if the photon has exited on the high side of the gaslayer
-        if (r > gaslayer.getOuterR()){
-            return 0;
-        }
-        return checkAngle(gaslayer, omega);
-    }
-
+//    public int isInGasLayer(GasLayerBend2D gaslayer) {
+//        double r = this.calculateR();
+//        double omega = this.calculateOmega();
+//        //Check if the radius of the photon is within the radius of the gaslayer
+//        if (gaslayer.getInnerR() < r && r < gaslayer.getOuterR()) {
+//            //Check if the angle of the photon is within the angles of the gaslayer
+//            if (gaslayer.getRightOmega() < gaslayer.getLeftOmega()) {
+//                if (gaslayer.getRightOmega() < omega && r < gaslayer.getLeftOmega()) {
+//                    return 1;
+//                }
+//            }
+//            else {
+//                if ((omega < gaslayer.getRightOmega() && omega < gaslayer.getLeftOmega()) || (omega > gaslayer.getRightOmega() && omega > gaslayer.getLeftOmega())){
+//                    return 1;
+//                }
+//            }
+//        }
+//        //Check if the photon has exited on the low side of the gaslayer
+//        if (r < gaslayer.getInnerR()) {
+//            return 2;
+//        }
+//        //Check if the photon has exited on the high side of the gaslayer
+//        if (r > gaslayer.getOuterR()){
+//            return 0;
+//        }
+//        return checkAngle(gaslayer, omega);
+//    }
+//
     /**
      * NOTE: THIS METHOD HAS NOT THOROUGHLY BEEN TESTED, BUGS MIGHT BE PRESENT
      *
-     * This method will return a 3 if the photon exited the gaslayer on the "left" side of the gaslayer
-     * This method will return a 4 if the photon exited the gaslayer on the "right" side of the gaslayer
-     * @return integer representative of the photons exit position
+     * This method will return a PositionEnum.LEFT if the photon exited the gaslayer on the "left" side of the gaslayer
+     * This method will return a PositionEnum.RIGHT if the photon exited the gaslayer on the "right" side of the gaslayer
+     * @return a corresponding PositionEnum
      */
-    public int checkAngle(GasLayerBend2D gaslayer, double omega) {
+    public PositionEnum leftOrRight(GasLayerBend2D gaslayer, double omega) {
         //TODO check if this is correct
         // The opposite angle here is the the angle 180 degrees from the angle in the middle of the two omega angles
         double oppositeAngle;
@@ -272,28 +489,27 @@ public class Photon {
             if (oppositeAngle > leftOmega){
                 //If the photon is in between the left omega and the opposite angle, it has exited the gaslayer on the left
                 if (omega < oppositeAngle && omega > leftOmega){
-                    return 3;
+                    return PositionEnum.LEFT;
                 }
                 //If the photon is not in between those angles, it exited the gaslayer on the right
-                else return 4;
+                else return PositionEnum.RIGHT;
             }
             else {
                 if (omega > oppositeAngle && omega < rightOmega){
-                    return 3;
+                    return PositionEnum.LEFT;
                 }
-                else return 4;
+                else return PositionEnum.RIGHT;
             }
         }
         else{
             //If there is a wraparound the opposite angle is defined as leftomega + rightomega / 2
-            // (Note: 360 is redundant I think, but I left it just in case)
             oppositeAngle = ((leftOmega + rightOmega) / 2);
             //If the photon is in between the opposite angle and the left omega, then it has exited on the left
             if (omega < oppositeAngle && omega > leftOmega){
-                return 3;
+                return PositionEnum.LEFT;
             }
             //If the photon is not in between those angles, it exited the gaslayer on the right
-            else return 4;
+            else return PositionEnum.RIGHT;
         }
     }
 
