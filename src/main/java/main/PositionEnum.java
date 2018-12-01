@@ -1,5 +1,5 @@
 package main;
 
 public enum PositionEnum {
-    ABOVE, INSIDE, OUTSIDE, LEFT, RIGHT
+    ABOVE, INSIDE, OUTSIDE, LEFT, RIGHT, UNDER
 }

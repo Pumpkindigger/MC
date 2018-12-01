@@ -35,4 +35,13 @@ public class Coordinate {
     public void setZ(double z) {
         this.z = z;
     }
+
+    @Override
+    public String toString() {
+        return "Coordinate{" +
+                "x= " + x +
+                ", y= " + y +
+                ", z= " + z +
+                '}';
+    }
 }

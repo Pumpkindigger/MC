@@ -49,42 +49,34 @@ public class SimulationBend {
                 }
                 Simulation3D.performStep(gasLayer, photon);
 
-                //TODO: Backtrack
-                photon.backTrack(gasLayer);
+                PositionEnum position = photon.backTrack(gasLayer);
 
-                //TODO perform correct position adjustments when photon is no longer in gaslayer
                 //Check if the photon has passed the gas layer, if so, set its weight to zero
-                PositionEnum position = PositionEnum.ABOVE;//photon.isInGasLayer(gasLayer);
                 switch (position) {
-                    //If 0, then the photon has exited the gaslayer on the high side, we for now eliminate the photon
+                    //If above, then the photon has exited the gaslayer on the high side, we for now eliminate the photon
                     case ABOVE:
                         photon.eliminate();
-                        //TODO limit the dimensions of the photon to the outer layer of the gaslayer
                         break;
-                    //If 1, then the photon is still in the gaslayer, so we only have to check if we should eliminate the photon
+                    //If inside, then the photon is still in the gaslayer, so we only have to check if we should eliminate the photon
                     case INSIDE:
                         photon.checkElimination();
                         break;
-                    //If 2, then the photon has exited the gaslayer on the low side, we check if it should be eliminated and set the current layer to += -1
-                    case OUTSIDE:
+                    //If under, then the photon has exited the gaslayer on the low side, we check if it should be eliminated and set the current layer to += -1
+                    case UNDER:
                         //TODO limit the dimensions of the photon to the outer layer of the gaslayer
-                        photon.checkElimination();
-                        photon.setCurrentLayer(photon.getCurrentLayer()-1);
+                        photon.madeIt();
+                        photon.setCurrentLayer(photon.getCurrentLayer() - 1);
                         totalWeight += photon.getWeight();
                         photonsPassed++;
-                        photon.madeIt();
                         break;
-
-                    //TODO: implement these cases correctly
-//                    case 3:
-//                        photon.eliminate();
-//                        break;
-//                    case 4:
-//                        photon.eliminate();
-//                        break;
-//                    default:
-//                        System.out.println(position);
-//                        throw new IllegalStateException("Photon is neither in a gaslayer, nor has exited it");
+                    //If left, then the photon exited the gaslayer on the left side, for now we eliminate the photon
+                    case LEFT:
+                        photon.eliminate();
+                        break;
+                    //if right, then the photon exited the gaslayer on the right side, for now we eliminate the photon
+                    case RIGHT:
+                        photon.eliminate();
+                        break;
                 }
             }
             nrBouncesLeft--;

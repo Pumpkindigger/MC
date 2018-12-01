@@ -93,6 +93,10 @@ public class Photon {
         this.currentCoordinate.setZ(z);
     }
 
+    public void setOldCoordinate(Coordinate oldCoordinate) {
+        this.oldCoordinate = oldCoordinate;
+    }
+
     public boolean isEliminated() {
         return this.eliminated;
     }
@@ -192,8 +196,8 @@ public class Photon {
      *
      * @return the radius of the center of mars to the photon
      */
-    public double calculateR() {
-        return Math.sqrt(this.currentCoordinate.getX() * this.currentCoordinate.getX() + this.currentCoordinate.getY() * this.currentCoordinate.getY());
+    public double calculateR(Coordinate coordinate) {
+        return Math.sqrt(coordinate.getX() * coordinate.getX() + coordinate.getY() * coordinate.getY());
     }
 
 
@@ -250,7 +254,7 @@ public class Photon {
      *
      * @param gaslayer the gaslayer which the photon is currently traveling through
      */
-    public void backTrack(GasLayerBend2D gaslayer) {
+    public PositionEnum backTrack(GasLayerBend2D gaslayer) {
         //First calculate all the intersection points
         ArrayList<Coordinate> intersections = getIntersectionPoints(gaslayer);
 
@@ -259,6 +263,10 @@ public class Photon {
         // If this is the case at least once, then the photon has left the gaslayer
         ArrayList<Pair<Double, Coordinate>> distancesIntersections = new ArrayList<Pair<Double, Coordinate>>();
         for (Coordinate intersection : intersections) {
+            //If the intersection is (0,0) it means its a filler coordinate and does not have to be checked
+            if (intersection.getY() == 0.0 && intersection.getX() == 0.0){
+                continue;
+            }
             //If the intersection is in between the old and new position, the photon has passed the intersection
             if (checkInBetween(intersection)) {
                 //Calculate the distance between the intersection point and the old position
@@ -266,6 +274,8 @@ public class Photon {
                 distancesIntersections.add(new Pair<Double, Coordinate>(distance, intersection));
             }
         }
+
+        PositionEnum res = null;
         //If there are no intersections in between the old and new position, the photon is still inside the current gaslayer radius wise.
         //Now we only need to perform an angle check.
         Coordinate closestIntersection = null;
@@ -278,20 +288,34 @@ public class Photon {
             }
         } else {
             closestIntersection = currentCoordinate;
+            res = PositionEnum.INSIDE;
         }
+
+        if(res == null){
+            if (calculateR(closestIntersection) == gaslayer.getInnerR()){
+                res = PositionEnum.UNDER;
+            }
+            else{
+                res = PositionEnum.ABOVE;
+            }
+        }
+
+
 
         double omega = calculateOmega(closestIntersection);
 
-        Coordinate finalPos = null;
+        Coordinate finalPos = new Coordinate(closestIntersection.getX(), closestIntersection.getY(), closestIntersection.getZ());
 
         //Limit the angle to the angles of the gaslayer if necessary
         if (!checkInsideAngle(gaslayer, omega)){
             switch (leftOrRight(gaslayer, omega)){
                 case RIGHT:
                     finalPos = limitAngle(closestIntersection, gaslayer.getRightOmega(), gaslayer.getOuterR());
+                    res = PositionEnum.RIGHT;
                     break;
                 case LEFT:
                     finalPos = limitAngle(closestIntersection, gaslayer.getLeftOmega(), gaslayer.getOuterR());
+                    res = PositionEnum.LEFT;
                     break;
             }
         }
@@ -302,6 +326,9 @@ public class Photon {
         currentCoordinate.setX(finalPos.getX());
         currentCoordinate.setY(finalPos.getY());
         currentCoordinate.setX(finalPos.getZ());
+
+        System.out.println(res);
+        return res;
     }
 
     /**
