@@ -17,7 +17,7 @@ public class SimulationBend {
         //Initialize the arraylist of gaslayers
         ArrayList<GasLayerBend2D> gasLayers = new ArrayList<GasLayerBend2D>(layers);
         //Initialize the seperate gas layer and add them to the list
-        GasLayerBend2D gasLayer1 = new GasLayerBend2D(10, 5, 90, 0, 10, 1, new RayleighScatter());
+        GasLayerBend2D gasLayer1 = new GasLayerBend2D(10, 5, 180, 200, 0.01, 1, new RayleighScatter());
         //GasLayerBend2D gasLayer2 = new GasLayerBend2D(7.5, 5, 90, 0, 5, 0.0, new HenyeyGreensteinScatter());
         gasLayers.add(gasLayer1);
         //gasLayers.add(gasLayer2);
