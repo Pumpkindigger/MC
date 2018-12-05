@@ -414,23 +414,30 @@ public class Photon {
 
         //Check intersection with the outer layer
         //Note that we always have 2 intersections with the outer layer.
-        double intersecOuterX1 = (d * dy + sgn * dx * Math.sqrt(gaslayer.getOuterR()*gaslayer.getOuterR() * dr * dr - (d * d))) / (dr * dr);
-        double intersecOuterX2 = (d * dy - sgn * dx * Math.sqrt(gaslayer.getOuterR()*gaslayer.getOuterR() * dr * dr - (d * d))) / (dr * dr);
-        double intersecOuterY1 = (-d * dx + Math.abs(dy) * Math.sqrt(gaslayer.getOuterR()*gaslayer.getOuterR() * dr * dr - (d * d))) / (dr * dr);
-        double intersecOuterY2 = (-d * dx - Math.abs(dy) * Math.sqrt(gaslayer.getOuterR()*gaslayer.getOuterR() * dr * dr - (d * d))) / (dr * dr);
+
+        //Define some variables to prevent redundant calculations
+        double dr2 = dr*dr;
+        double rootOuter = Math.sqrt(gaslayer.getOuterR()*gaslayer.getOuterR() * dr2 - (d * d));
+
+
+        double intersecOuterX1 = (d * dy + sgn * dx * rootOuter) / (dr2);
+        double intersecOuterX2 = (d * dy - sgn * dx * rootOuter) / (dr2);
+        double intersecOuterY1 = (-d * dx + Math.abs(dy) * rootOuter) / (dr2);
+        double intersecOuterY2 = (-d * dx - Math.abs(dy) * rootOuter) / (dr2);
 
         //Check intersection with the inner layer
         //Here we can have the situation where we have no intersections, so we check this first.
-        double discriminant = gaslayer.getInnerR() * gaslayer.getInnerR() * dr * dr - d * d;
+        double discriminant = gaslayer.getInnerR() * gaslayer.getInnerR() * dr2 - d * d;
         double intersecInnerX1 = 0.0;
         double intersecInnerY1 = 0.0;
         double intersecInnerX2 = 0.0;
         double intersecInnerY2 = 0.0;
         if (discriminant > 0) {
-            intersecInnerX1 = (d * dy + sgn * dx * Math.sqrt(gaslayer.getInnerR()*gaslayer.getInnerR() * dr * dr - (d * d))) / (dr * dr);
-            intersecInnerX2 = (d * dy - sgn * dx * Math.sqrt(gaslayer.getInnerR()*gaslayer.getInnerR() * dr * dr - (d * d))) / (dr * dr);
-            intersecInnerY1 = (-d * dx + Math.abs(dy) * Math.sqrt(gaslayer.getInnerR()*gaslayer.getInnerR() * dr * dr - (d * d))) / (dr * dr);
-            intersecInnerY2 = (-d * dx - Math.abs(dy) * Math.sqrt(gaslayer.getInnerR()*gaslayer.getInnerR() * dr * dr - (d * d))) / (dr * dr);
+            double rootInner = Math.sqrt(gaslayer.getInnerR()*gaslayer.getInnerR() * dr2 - (d * d));
+            intersecInnerX1 = (d * dy + sgn * dx * rootInner) / (dr2);
+            intersecInnerX2 = (d * dy - sgn * dx * rootInner) / (dr2);
+            intersecInnerY1 = (-d * dx + Math.abs(dy) * rootInner) / (dr2);
+            intersecInnerY2 = (-d * dx - Math.abs(dy) * rootInner) / (dr2);
         }
         //Since Z is irrelavent in this situation, we simply set z to 0.0
         ArrayList<Coordinate> res = new ArrayList<Coordinate>();
