@@ -158,9 +158,9 @@ public class Photon {
                 v_z = -cosTheta;
             } else {
                 //Calculate new values, default case
-                double v_xNew = (sinTheta * (v_x * v_y * cosPolar - v_y * sinPolar) / (Math.sqrt(1.0 - v_z * v_z))) + v_x * cosTheta;
+                double v_xNew = (sinTheta * (v_x * v_z * cosPolar - v_y * sinPolar) / (Math.sqrt(1.0 - v_z * v_z))) + v_x * cosTheta;
                 double v_yNew = (sinTheta * (v_y * v_z * cosPolar + v_x * sinPolar) / (Math.sqrt(1.0 - v_z * v_z))) + v_y * cosTheta;
-                double v_zNew = -((Math.sqrt(1.0 - v_z * v_z)) * sinTheta * cosPolar) + v_z * cosTheta;
+                double v_zNew = -(Math.sqrt(1.0 - v_z * v_z)) * sinTheta * cosPolar + v_z * cosTheta;
 
                 //Set the new values
                 v_x = v_xNew;
@@ -168,12 +168,24 @@ public class Photon {
                 v_z = v_zNew;
             }
         }
-//        if (Double.isNaN(v_x) || Double.isNaN(v_y) || Double.isNaN(v_z)){
+//        if (!(Double.isFinite(v_x) && Double.isFinite(v_y) && Double.isFinite(v_z))){
 //            System.out.println(cosTheta);
 //            System.out.println(polarAngle);
 //            System.out.println(v_x);
 //            System.out.println(v_y);
 //            System.out.println(v_z);
+//        }
+//
+//        if (v_z < -1 || v_z > 1){
+//            System.out.println("sum ting wong");
+//        }
+//
+//        if (v_x< -1 || v_x > 1){
+//            System.out.println("sum ting wong");
+//        }
+//
+//        if (v_y < -1 || v_y > 1){
+//            System.out.println("sum ting wong");
 //        }
     }
 

@@ -18,10 +18,10 @@ public class SimulationBend {
         //Initialize the arraylist of gaslayers
         ArrayList<GasLayerBend2D> gasLayers = new ArrayList<GasLayerBend2D>();
         //Initialize the seperate gas layer and add them to the list
-        GasLayerBend2D gasLayer1 = new GasLayerBend2D(10, 5, 360, 0, 1, 1, new RayleighScatter());
-        GasLayerBend2D gasLayer2 = new GasLayerBend2D(5, 2, 360, 0, 5, 0.0, new HenyeyGreensteinScatter());
+        GasLayerBend2D gasLayer1 = new GasLayerBend2D(10, 5, 360, 0, 1, 0.0, new HenyeyGreensteinScatter());
+        GasLayerBend2D gasLayer2 = new GasLayerBend2D(5, 2, 360, 0, 5, 0.0, new RayleighScatter());
 
-        //gasLayers.add(gasLayer2);
+        gasLayers.add(gasLayer2);
         gasLayers.add(gasLayer1);
 
         int layers = gasLayers.size();
@@ -40,7 +40,7 @@ public class SimulationBend {
         }
         */
 
-        //---------------------NOTE!!!!------------------------------
+        //---------------------NOTE!!!!------------------------------//
         //For now im making the assumption that all layers cover 360 degrees.
         for (Photon photon : photons){
             simulateOnePhoton(photon, gasLayers);
@@ -62,11 +62,11 @@ public class SimulationBend {
             //Backtrack the position and get a positionEnum back
             PositionEnum position = photon.backTrack(currentGasLayer);
 
-            if (photon.calculateR(photon.getCurrentCoordinate()) > 10){
-                System.out.println("sum ting wong");
-            }
+//            if (photon.calculateR(photon.getCurrentCoordinate()) > 10){
+//                System.out.println("sum ting wong");
+//            }
 
-            //Check if the photon has passed the gas layer, if so, set its weight to zero
+            //Check the position of the photon
             switch (position) {
                 //If above, then the photon has exited the gaslayer on the high side, we either move it to a higher gaslayer or eliminate it
                 case ABOVE:
@@ -92,9 +92,11 @@ public class SimulationBend {
                     break;
                 //If under, then the photon has exited the gaslayer on the low side, we check if it should be eliminated and set the current layer to += -1
                 case UNDER:
+                    //If the photon is in the lowest layer, it has made it to the surface
                     if(photon.getCurrentLayer() == 1){
                         photon.madeIt();
                     }
+                    //Else we move the photon to the layer below
                     else {
                         photon.setCurrentLayer(photon.getCurrentLayer() - 1);
                     }
