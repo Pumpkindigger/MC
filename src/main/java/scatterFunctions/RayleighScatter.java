@@ -3,7 +3,6 @@ package scatterFunctions;
 import main.MyRandom;
 
 /**
- * TODO: implement rayleigh scattering
  * http://orbit.dtu.dk/files/6314521/3D9A1d01.pdf
  */
 public class RayleighScatter extends ScatterFunction {

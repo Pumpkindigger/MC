@@ -2,6 +2,7 @@ package main;
 
 import main.objects.GasLayerBend2D;
 import main.objects.Photon;
+import scatterFunctions.HenyeyGreensteinScatter;
 import scatterFunctions.RayleighScatter;
 
 import java.util.ArrayList;
@@ -12,15 +13,18 @@ public class SimulationBend {
 
     public static void main(String[] args) {
         int nrPhotons = 50000;
-        int layers = 1;
+
 
         //Initialize the arraylist of gaslayers
-        ArrayList<GasLayerBend2D> gasLayers = new ArrayList<GasLayerBend2D>(layers);
+        ArrayList<GasLayerBend2D> gasLayers = new ArrayList<GasLayerBend2D>();
         //Initialize the seperate gas layer and add them to the list
-        GasLayerBend2D gasLayer1 = new GasLayerBend2D(10, 5, 180, 200, 1, 1, new RayleighScatter());
-        //GasLayerBend2D gasLayer2 = new GasLayerBend2D(7.5, 5, 90, 0, 5, 0.0, new HenyeyGreensteinScatter());
+        GasLayerBend2D gasLayer1 = new GasLayerBend2D(10, 5, 360, 0, 1, 1, new RayleighScatter());
+        GasLayerBend2D gasLayer2 = new GasLayerBend2D(5, 2, 360, 0, 5, 0.0, new HenyeyGreensteinScatter());
+
+        gasLayers.add(gasLayer2);
         gasLayers.add(gasLayer1);
-        //gasLayers.add(gasLayer2);
+
+        int layers = gasLayers.size();
 
         ArrayList<Photon> photons = new ArrayList<Photon>(nrPhotons);
 
@@ -29,11 +33,82 @@ public class SimulationBend {
             photons.add(new Photon(layers, 10, 45));
         }
 
+        /*
         for (GasLayerBend2D gasLayer : gasLayers) {
             photons = simulateOneGaslayer(gasLayer, photons);
             plotResult(nrPhotons, gasLayer, photons);
         }
+        */
 
+        //---------------------NOTE!!!!------------------------------
+        //For now im making the assumption that all layers cover 360 degrees.
+        for (Photon photon : photons){
+            simulateOnePhoton(photon, gasLayers);
+        }
+        plotResult(nrPhotons, gasLayers.get(layers-1), photons);
+
+    }
+
+    public static void simulateOnePhoton(Photon photon, ArrayList<GasLayerBend2D> gasLayers) {
+        int nrBouncesLeft = Constants.maximumBounces;
+        int maxLayer = gasLayers.size();
+        while (nrBouncesLeft > 0 && !photon.isEliminated()) {
+
+            //Get the current gaslayer
+            GasLayerBend2D currentGasLayer = gasLayers.get(photon.getCurrentLayer()-1);
+
+            //Perform a step
+            Simulation3D.performStep(currentGasLayer, photon);
+
+            //Backtrack the position and get a positionEnum back
+            PositionEnum position = photon.backTrack(currentGasLayer);
+
+            //Check if the photon has passed the gas layer, if so, set its weight to zero
+            switch (position) {
+                //If above, then the photon has exited the gaslayer on the high side, we either move it to a higher gaslayer or eliminate it
+                case ABOVE:
+                    //If there are no higher gaslayers, then eliminate the photon
+                    if (photon.getCurrentLayer() == maxLayer){
+                        photon.eliminate();
+                    }
+                    //If there are higher gaslayers, set the current gaslayer of the photon to 1 higher
+                    else{
+                        System.out.println("going up");
+                        photon.setCurrentLayer(photon.getCurrentLayer()+1);
+                    }
+                    break;
+                //If inside, then the photon is still in the gaslayer, so we update the angle and the weight and check if we should eliminate the photon
+                case INSIDE:
+                    //update the weight of the photon
+                    photon.updateWeight(currentGasLayer);
+
+                    //Update the angle of the photon
+                    photon.updateAngle(currentGasLayer);
+
+                    //Check if the photon is eliminated
+                    photon.checkElimination();
+                    break;
+                //If under, then the photon has exited the gaslayer on the low side, we check if it should be eliminated and set the current layer to += -1
+                case UNDER:
+                    if(photon.getCurrentLayer() == 1){
+                        photon.madeIt();
+                    }
+                    else {
+                        System.out.println("going down");
+                        photon.setCurrentLayer(photon.getCurrentLayer() - 1);
+                    }
+                    break;
+                //If left, then the photon exited the gaslayer on the left side, for now we eliminate the photon
+                case LEFT:
+                    photon.eliminate();
+                    break;
+                //if right, then the photon exited the gaslayer on the right side, for now we eliminate the photon
+                case RIGHT:
+                    photon.eliminate();
+                    break;
+            }
+            nrBouncesLeft--;
+        }
     }
 
     public static ArrayList<Photon> simulateOneGaslayer(GasLayerBend2D gasLayer, ArrayList<Photon> photons) {

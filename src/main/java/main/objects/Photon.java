@@ -2,6 +2,7 @@ package main.objects;
 
 import main.Constants;
 import main.Coordinate;
+import main.MyRandom;
 import main.PositionEnum;
 import org.jzy3d.maths.Coord3d;
 import org.jzy3d.maths.Pair;
@@ -137,7 +138,7 @@ public class Photon {
     }
 
     //Calculate the new cosine angles for the velocity
-    public void updateAngle(double cosTheta, double polarAngle) {
+    public void updateCosineAngles(double cosTheta, double polarAngle) {
         //Some values so that we only have to calculate them once:
         //cos^2 + sin^2 = 1
         double sinTheta = Math.sqrt(1.0 - cosTheta * cosTheta);
@@ -169,6 +170,22 @@ public class Photon {
         }
     }
 
+    public void updateWeight(GasLayerAbstract gaslayer){
+        this.weight = (this.weight - this.weight * gaslayer.getAbsorption() / gaslayer.getOpticalDepth());
+    }
+
+    public void updateAngle(GasLayerAbstract gaslayer){
+        double cosTheta;
+        double g = gaslayer.getG();
+        //If g = 0, we have isotropic scattering and can thus pick a random angle between -1 and 1
+
+        //Calculate scatter angle using the phase function of gaslayer
+        cosTheta = gaslayer.getScatterFunction().calculateAngle(g);
+
+        double polarAngle = 2.0 * Math.PI * MyRandom.random();
+
+        updateCosineAngles(cosTheta, polarAngle);
+    }
 
     //This is a temporary elimination function which should be replaced at some point.
     public void checkElimination() {

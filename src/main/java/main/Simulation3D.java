@@ -111,19 +111,5 @@ public class Simulation3D {
         //Update the position of the photon using the stepsize.
         photon.updatePosition(stepSize);
 
-        //newWeight = oldWeight - (absorption/opticalDepth)*oldWeight
-        photon.setWeight(photon.getWeight() - photon.getWeight() * gasLayer.getAbsorption() / gasLayer.getOpticalDepth());
-
-        double cosTheta;
-        double g = gasLayer.getG();
-        //If g = 0, we have isotropic scattering and can thus pick a random angle between -1 and 1
-
-        //Calculate scatter angle using the phase function of gaslayer
-        cosTheta = gasLayer.getScatterFunction().calculateAngle(g);
-
-        double polarAngle = 2.0 * Math.PI * MyRandom.random();
-
-        //Update the new cosine angles of the velocities
-        photon.updateAngle(cosTheta, polarAngle);
     }
 }
