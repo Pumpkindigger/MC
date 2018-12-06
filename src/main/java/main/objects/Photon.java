@@ -168,6 +168,13 @@ public class Photon {
                 v_z = v_zNew;
             }
         }
+//        if (Double.isNaN(v_x) || Double.isNaN(v_y) || Double.isNaN(v_z)){
+//            System.out.println(cosTheta);
+//            System.out.println(polarAngle);
+//            System.out.println(v_x);
+//            System.out.println(v_y);
+//            System.out.println(v_z);
+//        }
     }
 
     public void updateWeight(GasLayerAbstract gaslayer){

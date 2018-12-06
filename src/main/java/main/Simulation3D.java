@@ -107,7 +107,6 @@ public class Simulation3D {
         //Get a random stepsize which is based on the optical depth
         double stepSize = -Math.log(MyRandom.random()) / gasLayer.getOpticalDepth();
 
-        //System.out.println(stepSize);
         //Update the position of the photon using the stepsize.
         photon.updatePosition(stepSize);
 

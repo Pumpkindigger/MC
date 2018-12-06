@@ -12,7 +12,7 @@ import static main.Simulation3D.plotResult;
 public class SimulationBend {
 
     public static void main(String[] args) {
-        int nrPhotons = 50000;
+        int nrPhotons = 100000;
 
 
         //Initialize the arraylist of gaslayers
@@ -21,7 +21,7 @@ public class SimulationBend {
         GasLayerBend2D gasLayer1 = new GasLayerBend2D(10, 5, 360, 0, 1, 1, new RayleighScatter());
         GasLayerBend2D gasLayer2 = new GasLayerBend2D(5, 2, 360, 0, 5, 0.0, new HenyeyGreensteinScatter());
 
-        gasLayers.add(gasLayer2);
+        //gasLayers.add(gasLayer2);
         gasLayers.add(gasLayer1);
 
         int layers = gasLayers.size();
@@ -50,9 +50,8 @@ public class SimulationBend {
     }
 
     public static void simulateOnePhoton(Photon photon, ArrayList<GasLayerBend2D> gasLayers) {
-        int nrBouncesLeft = Constants.maximumBounces;
         int maxLayer = gasLayers.size();
-        while (nrBouncesLeft > 0 && !photon.isEliminated()) {
+        while (!photon.isEliminated()) {
 
             //Get the current gaslayer
             GasLayerBend2D currentGasLayer = gasLayers.get(photon.getCurrentLayer()-1);
@@ -62,6 +61,10 @@ public class SimulationBend {
 
             //Backtrack the position and get a positionEnum back
             PositionEnum position = photon.backTrack(currentGasLayer);
+
+            if (photon.calculateR(photon.getCurrentCoordinate()) > 10){
+                System.out.println("sum ting wong");
+            }
 
             //Check if the photon has passed the gas layer, if so, set its weight to zero
             switch (position) {
@@ -73,7 +76,6 @@ public class SimulationBend {
                     }
                     //If there are higher gaslayers, set the current gaslayer of the photon to 1 higher
                     else{
-                        System.out.println("going up");
                         photon.setCurrentLayer(photon.getCurrentLayer()+1);
                     }
                     break;
@@ -94,20 +96,20 @@ public class SimulationBend {
                         photon.madeIt();
                     }
                     else {
-                        System.out.println("going down");
                         photon.setCurrentLayer(photon.getCurrentLayer() - 1);
                     }
                     break;
                 //If left, then the photon exited the gaslayer on the left side, for now we eliminate the photon
                 case LEFT:
+                    System.out.println("eft");
                     photon.eliminate();
                     break;
                 //if right, then the photon exited the gaslayer on the right side, for now we eliminate the photon
                 case RIGHT:
+                    System.out.println("right");
                     photon.eliminate();
                     break;
             }
-            nrBouncesLeft--;
         }
     }
 
