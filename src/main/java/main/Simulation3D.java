@@ -66,6 +66,7 @@ public class Simulation3D {
     }
 
     public static void plotResult(int nrPhotons, GasLayerAbstract gasLayer, ArrayList<Photon> photons) {
+        System.out.println(photons.size());
         Coord3d[] coordinates = new Coord3d[photons.size()];
         Color[] colors = new Color[photons.size()];
 
