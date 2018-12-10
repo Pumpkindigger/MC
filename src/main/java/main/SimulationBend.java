@@ -18,10 +18,11 @@ public class SimulationBend {
         //Initialize the arraylist of gaslayers
         ArrayList<GasLayerBend2D> gasLayers = new ArrayList<GasLayerBend2D>();
         //Initialize the seperate gas layer and add them to the list
-        GasLayerBend2D gasLayer1 = new GasLayerBend2D(10, 5, 360, 0, 10, 0.0, new CdfScatter("src/main/resources/400nm_cdf.txt"));
-        GasLayerBend2D gasLayer2 = new GasLayerBend2D(5, 2, 360, 0, 10, 0.0, new RayleighScatter());
+        //GasLayerBend2D gasLayer1 = new GasLayerBend2D(10, 5, 360, 0, 2, 0.0, new HenyeyGreensteinScatter());
+        GasLayerBend2D gasLayer1 = new GasLayerBend2D(10, 5, 360, 0, 2, 0.0, new CdfScatter("src/main/resources/400nm_cdf.txt"));
+        GasLayerBend2D gasLayer2 = new GasLayerBend2D(5, 2, 360, 0, 2, 0.0, new RayleighScatter());
 
-        //gasLayers.add(gasLayer2);
+        gasLayers.add(gasLayer2);
         gasLayers.add(gasLayer1);
 
         int layers = gasLayers.size();
@@ -43,6 +44,7 @@ public class SimulationBend {
         //---------------------NOTE!!!!------------------------------//
         //For now im making the assumption that all layers cover 360 degrees.
         for (Photon photon : photons){
+            photon.stepInside();
             simulateOnePhoton(photon, gasLayers);
         }
         plotResult(nrPhotons, gasLayers.get(layers-1), photons);
@@ -73,7 +75,7 @@ public class SimulationBend {
                     //If there are higher gaslayers, set the current gaslayer of the photon to 1 higher
                     else{
                         photon.setCurrentLayer(photon.getCurrentLayer()+1);
-                        photon.stepOutside(currentGasLayer);
+                        photon.stepOutside();
                     }
                     break;
                 //If inside, then the photon is still in the gaslayer, so we update the angle and the weight and check if we should eliminate the photon
@@ -96,7 +98,7 @@ public class SimulationBend {
                     //Else we move the photon to the layer below
                     else {
                         photon.setCurrentLayer(photon.getCurrentLayer() - 1);
-                        photon.stepInside(currentGasLayer);
+                        photon.stepInside();
                     }
                     break;
                 //If left, then the photon exited the gaslayer on the left side, for now we eliminate the photon

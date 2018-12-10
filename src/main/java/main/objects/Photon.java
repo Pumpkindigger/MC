@@ -21,7 +21,6 @@ public class Photon {
 
     //Other data
     private double weight;
-    private int nrBounced;
     private boolean eliminated;
     private boolean madeIt;
 
@@ -35,7 +34,6 @@ public class Photon {
         this.v_y = 0;
         this.v_z = 1;
         this.weight = Constants.startingWeight;
-        this.nrBounced = 0;
         this.eliminated = false;
         this.madeIt = false;
     }
@@ -47,7 +45,6 @@ public class Photon {
         this.v_y = 0;
         this.v_z = 1;
         this.weight = Constants.startingWeight;
-        this.nrBounced = 0;
         this.eliminated = false;
         this.madeIt = false;
     }
@@ -61,7 +58,6 @@ public class Photon {
         this.v_y = 0.0;
         this.v_z = 0.0;
         this.weight = Constants.startingWeight;
-        this.nrBounced = 0;
         this.eliminated = false;
         this.madeIt = false;
     }
@@ -243,6 +239,9 @@ public class Photon {
 
 
     public boolean checkInsideAngle(GasLayerBend2D gaslayer, double omega) {
+        if(gaslayer.getLeftOmega() == 360 && gaslayer.getRightOmega() == 0){
+            return true;
+        }
         if (gaslayer.getRightOmega() < gaslayer.getLeftOmega()) {
             return gaslayer.getRightOmega() < omega && omega < gaslayer.getLeftOmega();
         } else {
@@ -273,9 +272,10 @@ public class Photon {
             if (checkInBetween(intersection)) {
                 //Calculate the distance between the intersection point and the old position
                 double distance = calculateXYDistance(oldCoordinate, intersection);
-                if (!(distance == 0)){
+                //TODO: Decide whether to do or not do this
+                //if (!(distance == 0)){
                 distancesIntersections.add(new Pair<Double, Coordinate>(distance, intersection));
-                }
+                //}
             }
         }
 
@@ -297,7 +297,7 @@ public class Photon {
         }
 
         if (res == null) {
-            if (calculateR(closestIntersection) <= gaslayer.getInnerR()) {
+            if (calculateR(closestIntersection) <= gaslayer.getInnerR()+0.000000001) {
                 res = PositionEnum.UNDER;
             } else {
                 res = PositionEnum.ABOVE;
@@ -519,9 +519,8 @@ public class Photon {
 
     /**
      * This method makes sure the photon actually enters the gaslayer
-     * @param gaslayer the gaslayer to step inside
      */
-    public void stepInside(GasLayerBend2D gaslayer){
+    public void stepInside(){
         double v_x = -this.currentCoordinate.getX();
         double v_y = -this.currentCoordinate.getY();
 
@@ -531,9 +530,8 @@ public class Photon {
 
     /**
      * This method makes sure the photon actually exits the gaslayer
-     * @param gaslayer the gaslayer to step out
      */
-    public void stepOutside(GasLayerBend2D gaslayer){
+    public void stepOutside(){
         double v_x = this.currentCoordinate.getX();
         double v_y = this.currentCoordinate.getY();
 
