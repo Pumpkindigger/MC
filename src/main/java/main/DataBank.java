@@ -16,6 +16,10 @@ public class DataBank {
         readData(filename);
     }
 
+    public double maxValue(){
+        return data.get(data.size()-1).a;
+    }
+
     private void readData(String filename) {
         try {
             FileReader file = new FileReader(new File(filename));
@@ -43,6 +47,10 @@ public class DataBank {
      * @return the angle in which the photon will scatter
      */
     public double getAngle(double value){
+        //If the value which is being querried, is higher than the max value, throw exception
+        if (value > maxValue()){
+            throw new IllegalArgumentException("Couldnt find value");
+        }
         //Start the search halfway in the list
         int index = data.size()/2;
         //Count will start on 2 since in the first iteration we want to either add or substract
@@ -54,16 +62,10 @@ public class DataBank {
             if (index == 0){
                 return data.get(0).b;
             }
-            //If index == size, the value is not present in the list
-            if (index == data.size()){
-                throw new IllegalArgumentException("Couldnt find value");
-            }
             //If the value is lower than the value at index, but higher than at index-1, we found our value
             if (value <= data.get(index).a && value > data.get(index-1).a){
-                System.out.println(count-1);
                 return data.get(index).b;
             }
-
             //calculate the index change
             int difference = data.size() / (int) Math.pow(2, count);
             //If the difference gets to 0, set it to 1

@@ -2,7 +2,7 @@ package main;
 
 import main.objects.GasLayerBend2D;
 import main.objects.Photon;
-import scatterFunctions.HenyeyGreensteinScatter;
+import scatterFunctions.CdfScatter;
 import scatterFunctions.RayleighScatter;
 
 import java.util.ArrayList;
@@ -18,10 +18,10 @@ public class SimulationBend {
         //Initialize the arraylist of gaslayers
         ArrayList<GasLayerBend2D> gasLayers = new ArrayList<GasLayerBend2D>();
         //Initialize the seperate gas layer and add them to the list
-        GasLayerBend2D gasLayer1 = new GasLayerBend2D(10, 5, 360, 0, 1, 0.0, new HenyeyGreensteinScatter());
+        GasLayerBend2D gasLayer1 = new GasLayerBend2D(10, 5, 360, 0, 10, 0.0, new CdfScatter("src/main/resources/400nm_cdf.txt"));
         GasLayerBend2D gasLayer2 = new GasLayerBend2D(5, 2, 360, 0, 10, 0.0, new RayleighScatter());
 
-        gasLayers.add(gasLayer2);
+        //gasLayers.add(gasLayer2);
         gasLayers.add(gasLayer1);
 
         int layers = gasLayers.size();
