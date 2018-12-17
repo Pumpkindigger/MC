@@ -238,14 +238,14 @@ public class Photon {
     }
 
 
-    public boolean checkInsideAngle(GasLayerBend2D gaslayer, double omega) {
-        if(gaslayer.getLeftOmega() == 360 && gaslayer.getRightOmega() == 0){
+    public boolean checkInsideAngle(double left, double right , double omega) {
+        if(left == 360 && right == 0){
             return true;
         }
-        if (gaslayer.getRightOmega() < gaslayer.getLeftOmega()) {
-            return gaslayer.getRightOmega() < omega && omega < gaslayer.getLeftOmega();
+        if (right < left) {
+            return right < omega && omega < left;
         } else {
-            return (omega < gaslayer.getRightOmega() && omega < gaslayer.getLeftOmega()) || (omega > gaslayer.getRightOmega() && omega > gaslayer.getLeftOmega());
+            return (omega < right && omega < left) || (omega > right && omega > left);
         }
     }
 
@@ -310,7 +310,7 @@ public class Photon {
         Coordinate finalPos = new Coordinate(closestIntersection.getX(), closestIntersection.getY(), closestIntersection.getZ());
 
         //Limit the angle to the angles of the gaslayer if necessary
-        if (!checkInsideAngle(gaslayer, omega)) {
+        if (!checkInsideAngle(gaslayer.getLeftOmega(), gaslayer.getRightOmega(), omega)) {
             switch (leftOrRight(gaslayer, omega)) {
                 case RIGHT:
                     finalPos = limitAngle(closestIntersection, gaslayer.getRightOmega(), gaslayer.getOuterR());

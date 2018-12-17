@@ -2,12 +2,9 @@ package main;
 
 import main.objects.GasLayerBend2D;
 import main.objects.Photon;
-import scatterFunctions.CdfScatter;
 import scatterFunctions.RayleighScatter;
 
 import java.util.ArrayList;
-
-import static main.Simulation3D.plotResult;
 
 public class SimulationBend {
 
@@ -19,36 +16,42 @@ public class SimulationBend {
         ArrayList<GasLayerBend2D> gasLayers = new ArrayList<GasLayerBend2D>();
         //Initialize the seperate gas layer and add them to the list
         //GasLayerBend2D gasLayer1 = new GasLayerBend2D(10, 5, 360, 0, 2, 0.0, new HenyeyGreensteinScatter());
-        GasLayerBend2D gasLayer1 = new GasLayerBend2D(10, 5, 360, 0, 2, 0.0, new CdfScatter("src/main/resources/400nm_cdf.txt"));
-        GasLayerBend2D gasLayer2 = new GasLayerBend2D(5, 2, 360, 0, 2, 0.0, new RayleighScatter());
+        //GasLayerBend2D gasLayer1 = new GasLayerBend2D(10, 5, 360, 0, 2, 0.0, new CdfScatter("src/main/resources/400nm_cdf.txt"));
+        GasLayerBend2D gasLayer2 = new GasLayerBend2D(10, 5, 360, 0, 0.001, 0.0, new RayleighScatter());
 
         gasLayers.add(gasLayer2);
-        gasLayers.add(gasLayer1);
+        //gasLayers.add(gasLayer1);
 
-        int layers = gasLayers.size();
+        double weight = simulateAngles(gasLayers, nrPhotons, new int[] {20, 30, 45, 60, 75, 90, 120});
 
-        ArrayList<Photon> photons = new ArrayList<Photon>(nrPhotons);
+        System.out.println("Photon packets that made it: " + weight/Constants.startingWeight);
 
-        //Create all the protons
-        for (int i = 0; i < nrPhotons; i++) {
-            photons.add(new Photon(layers, 10, 90));
+    }
+
+    public static double simulateAngles(ArrayList<GasLayerBend2D> gasLayers, int nrPhotons, int[] angles){
+        double totalWeight = 0.0;
+        for (int angle: angles) {
+            ArrayList<Photon> photons = new ArrayList<Photon>(nrPhotons);
+
+            //Create all the protons
+            for (int i = 0; i < nrPhotons; i++) {
+                photons.add(new Photon(gasLayers.size(), 10, angle));
+            }
+
+            //---------------------NOTE!!!!------------------------------//
+            //For now im making the assumption that all layers cover 360 degrees.
+            for (Photon photon : photons){
+                photon.stepInside();
+                simulateOnePhoton(photon, gasLayers);
+            }
+//            if (angle == 20){
+//                plotResult(nrPhotons, gasLayers.get(gasLayers.size()-1), photons);
+//            }
+
+
+            totalWeight += weightBetweenAngles(photons, 355, 350);
         }
-
-        /*
-        for (GasLayerBend2D gasLayer : gasLayers) {
-            photons = simulateOneGaslayer(gasLayer, photons);
-            plotResult(nrPhotons, gasLayer, photons);
-        }
-        */
-
-        //---------------------NOTE!!!!------------------------------//
-        //For now im making the assumption that all layers cover 360 degrees.
-        for (Photon photon : photons){
-            photon.stepInside();
-            simulateOnePhoton(photon, gasLayers);
-        }
-        plotResult(nrPhotons, gasLayers.get(layers-1), photons);
-
+        return totalWeight;
     }
 
     public static void simulateOnePhoton(Photon photon, ArrayList<GasLayerBend2D> gasLayers) {
@@ -164,5 +167,18 @@ public class SimulationBend {
         System.out.println(photonsPassed);
         System.out.println(totalWeight);
         return photons;
+    }
+
+
+    public static double weightBetweenAngles(ArrayList<Photon> photons, double left, double right) {
+        double res = 0.0;
+        for (Photon photon : photons) {
+            if (photon.getMadeIt()) {
+                if (photon.checkInsideAngle(left, right, photon.calculateOmega(photon.getCurrentCoordinate()))){
+                    res += photon.getWeight();
+                }
+            }
+        }
+        return res;
     }
 }
