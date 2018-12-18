@@ -48,4 +48,9 @@ public class GasLayerAbstract {
     public void setAbsorption(double absorption) {
         this.absorption = absorption;
     }
+
+    public void setK(double k){
+        this.k = k;
+        this.opticalDepth = k/getGeometricalDepth();
+    }
 }

@@ -35,9 +35,9 @@ public class Plotter extends ApplicationFrame{
         }
 
         final JFreeChart chart = ChartFactory.createXYLineChart(
-                "XY Series Demo",
-                "X",
-                "Y",
+                "Single Layer, Isotropic",
+                "k",
+                "Nr of photon packets",
                 data,
                 PlotOrientation.VERTICAL,
                 true,

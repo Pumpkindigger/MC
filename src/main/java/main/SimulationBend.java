@@ -2,7 +2,8 @@ package main;
 
 import main.objects.GasLayerBend2D;
 import main.objects.Photon;
-import scatterFunctions.RayleighScatter;
+import org.jzy3d.maths.Pair;
+import scatterFunctions.HenyeyGreensteinScatter;
 
 import java.util.ArrayList;
 
@@ -15,17 +16,44 @@ public class SimulationBend {
         //Initialize the arraylist of gaslayers
         ArrayList<GasLayerBend2D> gasLayers = new ArrayList<GasLayerBend2D>();
         //Initialize the seperate gas layer and add them to the list
+
         //GasLayerBend2D gasLayer1 = new GasLayerBend2D(10, 5, 360, 0, 2, 0.0, new HenyeyGreensteinScatter());
         //GasLayerBend2D gasLayer1 = new GasLayerBend2D(10, 5, 360, 0, 2, 0.0, new CdfScatter("src/main/resources/400nm_cdf.txt"));
-        GasLayerBend2D gasLayer2 = new GasLayerBend2D(10, 5, 360, 0, 0.001, 0.0, new RayleighScatter());
+        GasLayerBend2D gasLayer2 = new GasLayerBend2D(10, 5, 360, 0, 0.001, 0.0, new HenyeyGreensteinScatter());
 
         gasLayers.add(gasLayer2);
         //gasLayers.add(gasLayer1);
 
-        double weight = simulateAngles(gasLayers, nrPhotons, new int[] {20, 30, 45, 60, 75, 90, 120});
+        int[] angles = new int[]{10, 20, 30, 45, 60, 75, 90, 120};
+        double[] ks = new double[]{0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1,2,3,4, 5, 10};
+        //-------For simulation 1 k value, for multiple angles-------//
+        //double weight = simulateAngles(gasLayers, nrPhotons, new int[] {20, 30, 45, 60, 75, 90, 120});
+        //System.out.println("Photon packets that made it: " + weight/Constants.startingWeight);
 
-        System.out.println("Photon packets that made it: " + weight/Constants.startingWeight);
+        ArrayList<Pair<Double, Double>> coordinates = multipleKs(gasLayers, nrPhotons, angles, ks);
 
+        plotResults2D(coordinates);
+
+    }
+
+    public static void plotResults2D(ArrayList<Pair<Double, Double>> coordinates){
+        final Plotter plotter = new Plotter("Title", new String[]{"Nr of photons packets"});
+        for (Pair<Double, Double> coordinate : coordinates){
+            plotter.addData(coordinate.a, coordinate.b, 1);
+        }
+        plotter.plot();
+    }
+
+    public static ArrayList<Pair<Double, Double>> multipleKs(ArrayList<GasLayerBend2D> gasLayers, int nrPhotons, int[] angles, double[] ks){
+        ArrayList<Pair<Double, Double>> coordinates = new ArrayList<>();
+        for (double k : ks){
+            for (GasLayerBend2D gasLayer : gasLayers){
+                gasLayer.setK(k);
+            }
+            Double weight = simulateAngles(gasLayers, nrPhotons, angles) / Constants.startingWeight;
+            coordinates.add(new Pair<Double, Double>(k, weight));
+        }
+        return coordinates;
     }
 
     public static double simulateAngles(ArrayList<GasLayerBend2D> gasLayers, int nrPhotons, int[] angles){
@@ -34,6 +62,7 @@ public class SimulationBend {
             ArrayList<Photon> photons = new ArrayList<Photon>(nrPhotons);
 
             //Create all the protons
+            //TODO: Magic number in radius of photon creation, fix this
             for (int i = 0; i < nrPhotons; i++) {
                 photons.add(new Photon(gasLayers.size(), 10, angle));
             }
@@ -116,57 +145,6 @@ public class SimulationBend {
                     break;
             }
         }
-    }
-
-    public static ArrayList<Photon> simulateOneGaslayer(GasLayerBend2D gasLayer, ArrayList<Photon> photons) {
-        int photonsPassed = 0;
-        int nrBouncesLeft = Constants.maximumBounces;
-        double totalWeight = 0;
-        while (nrBouncesLeft > 0) {
-            //Loop over all photon packets
-            for (Photon photon : photons) {
-                //If the proton is eliminated, then we no longer have to perform operations on it.
-                if (photon.isEliminated()) {
-                    continue;
-                }
-                Simulation3D.performStep(gasLayer, photon);
-
-                PositionEnum position = photon.backTrack(gasLayer);
-
-                //Check if the photon has passed the gas layer, if so, set its weight to zero
-                switch (position) {
-                    //If above, then the photon has exited the gaslayer on the high side, we for now eliminate the photon
-                    case ABOVE:
-                        photon.eliminate();
-                        break;
-                    //If inside, then the photon is still in the gaslayer, so we only have to check if we should eliminate the photon
-                    case INSIDE:
-                        photon.checkElimination();
-                        break;
-                    //If under, then the photon has exited the gaslayer on the low side, we check if it should be eliminated and set the current layer to += -1
-                    case UNDER:
-                        //TODO limit the dimensions of the photon to the outer layer of the gaslayer
-                        photon.madeIt();
-                        photon.setCurrentLayer(photon.getCurrentLayer() - 1);
-                        totalWeight += photon.getWeight();
-                        photonsPassed++;
-                        break;
-                    //If left, then the photon exited the gaslayer on the left side, for now we eliminate the photon
-                    case LEFT:
-                        photon.eliminate();
-                        break;
-                    //if right, then the photon exited the gaslayer on the right side, for now we eliminate the photon
-                    case RIGHT:
-                        photon.eliminate();
-                        break;
-                }
-            }
-            nrBouncesLeft--;
-        }
-
-        System.out.println(photonsPassed);
-        System.out.println(totalWeight);
-        return photons;
     }
 
 
