@@ -51,7 +51,7 @@ public class SimulationBend {
                 gasLayer.setK(k);
             }
             Double weight = simulateAngles(gasLayers, nrPhotons, angles) / Constants.startingWeight;
-            coordinates.add(new Pair<Double, Double>(k, weight));
+            coordinates.add(new Pair<>(k, weight));
         }
         return coordinates;
     }
