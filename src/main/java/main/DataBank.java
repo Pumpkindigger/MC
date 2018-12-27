@@ -20,6 +20,10 @@ public class DataBank {
         return data.get(data.size()-1).a;
     }
 
+    /**
+     * Reads date from file and puts in in data
+     * @param filename the filename of the file from which to read
+     */
     private void readData(String filename) {
         try {
             FileReader file = new FileReader(new File(filename));

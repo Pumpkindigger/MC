@@ -9,6 +9,11 @@ import scatterFunctions.RayleighScatter;
 
 import java.util.ArrayList;
 
+/**
+ * ------------------------------------------------------------------------------------------------
+ * NOTE: This class is mainly used for testing and will likely not be included in the final product
+ * ------------------------------------------------------------------------------------------------
+ */
 public class Simulation3D {
 
     public static void main(String[] args) {

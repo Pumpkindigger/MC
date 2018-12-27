@@ -1,6 +1,9 @@
 package main.objects;
 
-import main.*;
+import main.Constants;
+import main.Coordinate;
+import main.MyRandom;
+import main.PositionEnum;
 import org.jzy3d.maths.Coord3d;
 import org.jzy3d.maths.Pair;
 
@@ -25,7 +28,10 @@ public class Photon {
     private boolean madeIt;
 
 
-    //Default constructor for 1D analysis, only in the z direction
+    /**
+     * Constructor used for Simulation3D class
+     * @param currentLayer the starting layer of the photon
+     */
     public Photon(int currentLayer) {
         this.oldCoordinate = null;
         this.currentCoordinate = new Coordinate(0.0, 0.0, 0.0);
@@ -38,6 +44,13 @@ public class Photon {
         this.madeIt = false;
     }
 
+    /**
+     * Constructor used when we want to specify an x, y, and z coordinate.
+     * Mostly used for testing
+     * @param x x coordinate
+     * @param y y coordinate
+     * @param z z coordinate
+     */
     public Photon(double x, double y, double z) {
         this.oldCoordinate = null;
         this.currentCoordinate = new Coordinate(x, y, z);
@@ -49,7 +62,13 @@ public class Photon {
         this.madeIt = false;
     }
 
-    //Constructor for 2D analysis for bend gas layer
+    /**
+     * Constructor used in SimilationBend
+     * z coordinate will be set to 0
+     * @param currentLayer the starting layer of the photon
+     * @param radius the initial radius of the photon
+     * @param omega the angle counterclockwise to the north (positive y axis)
+     */
     public Photon(int currentLayer, int radius, int omega) {
         this.oldCoordinate = null;
         this.currentCoordinate = new Coordinate(-Math.sin(Math.toRadians(omega)) * radius, Math.cos(Math.toRadians(omega)) * radius, 0.0);
@@ -110,6 +129,9 @@ public class Photon {
         this.eliminated = true;
     }
 
+    /**
+     * Sets the photon's madeIt field to true, and eliminates the photon
+     */
     public void madeIt() {
         checkElimination();
         if (!this.eliminated) {
@@ -122,7 +144,10 @@ public class Photon {
         return this.madeIt;
     }
 
-    //Returns the old coordinate of the photon and updates the current coordinate
+    /**
+     * Updates the current coordinate
+     * @param delta the timestep to take
+     */
     public void updatePosition(double delta) {
         oldCoordinate = new Coordinate(currentCoordinate.getX(), currentCoordinate.getY(), currentCoordinate.getZ());
         this.currentCoordinate.setX(oldCoordinate.getX() + delta * v_x);
@@ -130,7 +155,11 @@ public class Photon {
         this.currentCoordinate.setZ(oldCoordinate.getZ() + delta * v_z);
     }
 
-    //Calculate the new cosine angles for the velocity
+    /**
+     * Calculate the new cosine angles for the velocity
+     * @param cosTheta the angle from the computed from the scattering in the gaslayer
+     * @param polarAngle the polar angle
+     */
     public void updateCosineAngles(double cosTheta, double polarAngle) {
         //Some values so that we only have to calculate them once:
         //cos^2 + sin^2 = 1
@@ -163,10 +192,18 @@ public class Photon {
         }
     }
 
+    /**
+     * Updates the weight of the photon
+     * @param gaslayer the gaslayer from which to get the absorption factor
+     */
     public void updateWeight(GasLayerAbstract gaslayer) {
         this.weight = (this.weight - this.weight * gaslayer.getAbsorption() / gaslayer.getOpticalDepth());
     }
 
+    /**
+     * Updates the angles of the photon
+     * @param gaslayer the gaslayer from which to get the the scatterfuntion
+     */
     public void updateAngle(GasLayerAbstract gaslayer) {
         double cosTheta;
         double g = gaslayer.getG();
@@ -186,6 +223,10 @@ public class Photon {
         }
     }
 
+    /**
+     * Turns the x, y, and z coordinate of the photon into a Coord3d
+     * @return a Coord3d representation of the position of the photon
+     */
     public Coord3d toCoordinate() {
         Coord3d res = new Coord3d();
         res.set((float) this.currentCoordinate.getX(), (float) this.currentCoordinate.getY(), (float) this.currentCoordinate.getZ());
@@ -238,6 +279,13 @@ public class Photon {
     }
 
 
+    /**
+     * Checks if the photon is inside 2 angles
+     * @param left the left angle which to check to
+     * @param right the right angle which to check to
+     * @param omega the angle of the photon
+     * @return
+     */
     public boolean checkInsideAngle(double left, double right , double omega) {
         if(left == 360 && right == 0){
             return true;
@@ -397,7 +445,7 @@ public class Photon {
         double dyl = currentCoordinate.getY() - oldCoordinate.getY();
 
         boolean horizontal = Math.abs(dxl) >= Math.abs(dyl);
-        //MAYBE THIS CAN BE USED TO FIX FURTHER BUGS, BUT I DONT THINK IT IS USEFULL NOW
+        //MAYBE THIS CAN BE USED TO FIX FURTHER BUGS, BUT I DONT THINK IT IS USEFUL NOW
 //        if (horizontal) {
 //            return dxl > 0 ? (Utility.reduceDecimals(oldCoordinate.getX()) <= Utility.reduceDecimals(coordinate.getX()) && Utility.reduceDecimals(coordinate.getX()) <= Utility.reduceDecimals(currentCoordinate.getX()))
 //                    : (Utility.reduceDecimals(currentCoordinate.getX()) <= Utility.reduceDecimals(coordinate.getX()) && Utility.reduceDecimals(coordinate.getX()) <= Utility.reduceDecimals(oldCoordinate.getX()));

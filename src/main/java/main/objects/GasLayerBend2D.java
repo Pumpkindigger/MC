@@ -9,6 +9,16 @@ public class GasLayerBend2D extends GasLayerAbstract{
     private double leftOmega;
     private double rightOmega;
 
+    /**
+     * Constructor for a 2D bend gaslayer (A cylinder if you will)
+     * @param outerR outer radius of the gaslayer
+     * @param innerR inner radius of the gaslayer
+     * @param leftOmega the left angle of the gaslayer
+     * @param rightOmega the right angle of the gaslayer
+     * @param k the density coefficient of the gaslayer
+     * @param g the scatter coefficient of the scatterfunction
+     * @param scatterFunction the scatterfunction
+     */
     public GasLayerBend2D(double outerR, double innerR, double leftOmega, double rightOmega, double k, double g, ScatterFunction scatterFunction) {
         super(k, g, scatterFunction);
         setGeometricalDepth(outerR - innerR);
