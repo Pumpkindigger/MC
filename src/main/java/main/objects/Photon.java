@@ -16,6 +16,7 @@ public class Photon {
     private Coordinate currentCoordinate;
 
     private int currentLayer;
+    private int horizontalIndex;
 
     //Directional parameters, this is the direction cosine
     private double v_x;
@@ -36,6 +37,7 @@ public class Photon {
         this.oldCoordinate = null;
         this.currentCoordinate = new Coordinate(0.0, 0.0, 0.0);
         this.currentLayer = currentLayer;
+        this.horizontalIndex = 0;
         this.v_x = 0;
         this.v_y = 0;
         this.v_z = 1;
@@ -44,22 +46,30 @@ public class Photon {
         this.madeIt = false;
     }
 
-    /**
-     * Constructor used when we want to specify an x, y, and z coordinate.
-     * Mostly used for testing
-     * @param x x coordinate
-     * @param y y coordinate
-     * @param z z coordinate
-     */
-    public Photon(double x, double y, double z) {
-        this.oldCoordinate = null;
-        this.currentCoordinate = new Coordinate(x, y, z);
-        this.v_x = 0;
-        this.v_y = 0;
-        this.v_z = 1;
-        this.weight = Constants.startingWeight;
-        this.eliminated = false;
-        this.madeIt = false;
+//    /**
+//     * Constructor used when we want to specify an x, y, and z coordinate.
+//     * Mostly used for testing
+//     * @param x x coordinate
+//     * @param y y coordinate
+//     * @param z z coordinate
+//     */
+//    public Photon(double x, double y, double z) {
+//        this.oldCoordinate = null;
+//        this.currentCoordinate = new Coordinate(x, y, z);
+//        this.v_x = 0;
+//        this.v_y = 0;
+//        this.v_z = 1;
+//        this.weight = Constants.startingWeight;
+//        this.eliminated = false;
+//        this.madeIt = false;
+//    }
+
+    public int getHorizontalIndex() {
+        return horizontalIndex;
+    }
+
+    public void setHorizontalIndex(int horizontalIndex) {
+        this.horizontalIndex = horizontalIndex;
     }
 
     /**
@@ -73,6 +83,7 @@ public class Photon {
         this.oldCoordinate = null;
         this.currentCoordinate = new Coordinate(-Math.sin(Math.toRadians(omega)) * radius, Math.cos(Math.toRadians(omega)) * radius, 0.0);
         this.currentLayer = currentLayer;
+        this.horizontalIndex = 0;
         this.v_x = 1.0;
         this.v_y = 0.0;
         this.v_z = 0.0;
@@ -345,7 +356,7 @@ public class Photon {
         }
 
         if (res == null) {
-            if (calculateR(closestIntersection) <= gaslayer.getInnerR()+0.000000001) {
+            if (calculateR(closestIntersection) <= gaslayer.getInnerR()+Constants.epsilon) {
                 res = PositionEnum.UNDER;
             } else {
                 res = PositionEnum.ABOVE;
@@ -585,6 +596,15 @@ public class Photon {
 
         this.currentCoordinate.setX(this.currentCoordinate.getX() + v_x * 0.000000001);
         this.currentCoordinate.setY(this.currentCoordinate.getY() + v_y * 0.000000001);
+    }
+
+    public void setInitialHorizontalIndex(ArrayList<GasLayerBend2D> gasLayers){
+        double omega = this.calculateOmega(this.currentCoordinate);
+        for (int i = 0; i < gasLayers.size(); i++) {
+            if (checkInsideAngle(gasLayers.get(i).getLeftOmega(), gasLayers.get(i).getRightOmega(), omega)){
+                this.horizontalIndex = i;
+            }
+        }
     }
 
 }
