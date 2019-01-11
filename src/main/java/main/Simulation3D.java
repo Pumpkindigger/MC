@@ -66,18 +66,18 @@ public class Simulation3D {
         System.out.println(photonsPassed);
         System.out.println(totalWeight);
 
-        plotResult(nrPhotons, gasLayer, photons);
+        plotResult(nrPhotons, gasLayer.getGeometricalDepth()*2, photons);
 
     }
 
-    public static void plotResult(int nrPhotons, GasLayerAbstract gasLayer, ArrayList<Photon> photons) {
+    public static void plotResult(int nrPhotons, double size, ArrayList<Photon> photons) {
         System.out.println(photons.size());
         Coord3d[] coordinates = new Coord3d[photons.size()];
         Color[] colors = new Color[photons.size()];
 
         //For each photon, first limit its dimensions and then transform it into a coordinate
         for (int i = 0; i < photons.size(); i++) {
-            photons.get(i).limitDimensions1D(gasLayer.getGeometricalDepth() * 2);
+            photons.get(i).limitDimensions1D(size);
             coordinates[i] = photons.get(i).toCoordinate();
             //If the photon has a weight of 0, set the color to red
             if (!photons.get(i).getMadeIt()) {
@@ -91,15 +91,6 @@ public class Simulation3D {
 
         //This plotter will on init draw the plot with the given coordinates
         Plotter3D plotter3D = new Plotter3D(coordinates, colors);
-
-        //Calculate the expected number of photons which will pass through the gaslayer using the Lambert-Beer Law
-        double expected = nrPhotons * Math.exp(-gasLayer.getOpticalDepth());
-
-        System.out.println("Nr of photons passed by formula: " + expected);
-
-        //Calculate the error rate of my model vs the theoretical number
-        //double error = expected / photonsPassed;
-        //System.out.println("Error factor: " + error);
     }
 
     /**

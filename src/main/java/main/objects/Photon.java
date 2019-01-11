@@ -69,6 +69,9 @@ public class Photon {
     }
 
     public void setHorizontalIndex(int horizontalIndex) {
+        if(horizontalIndex == 2){
+            System.out.println("test");
+        }
         this.horizontalIndex = horizontalIndex;
     }
 
@@ -338,9 +341,8 @@ public class Photon {
             }
         }
 
+        //Now we calculate the closest intersection point
         PositionEnum res = null;
-        //If there are no intersections in between the old and new position, the photon is still inside the current gaslayer radius wise.
-        //Now we only need to perform an angle check.
         Coordinate closestIntersection = null;
         if (!(distancesIntersections.size() == 0)) {
             double minDistance = Double.MAX_VALUE;
@@ -350,11 +352,14 @@ public class Photon {
                     minDistance = pair.a;
                 }
             }
-        } else {
+        }
+        //If we have no intersection points, we know that we are inside the radius of the gaslayer
+        else {
             closestIntersection = currentCoordinate;
             res = PositionEnum.INSIDE;
         }
 
+        //If res is still null, that means that the photon is either above or below the gaslayer
         if (res == null) {
             if (calculateR(closestIntersection) <= gaslayer.getInnerR()+Constants.epsilon) {
                 res = PositionEnum.UNDER;
@@ -363,7 +368,7 @@ public class Photon {
             }
         }
 
-
+        //Calculate the angle of the closest intersection point
         double omega = calculateOmega(closestIntersection);
 
         Coordinate finalPos = new Coordinate(closestIntersection.getX(), closestIntersection.getY(), closestIntersection.getZ());
@@ -456,14 +461,6 @@ public class Photon {
         double dyl = currentCoordinate.getY() - oldCoordinate.getY();
 
         boolean horizontal = Math.abs(dxl) >= Math.abs(dyl);
-        //MAYBE THIS CAN BE USED TO FIX FURTHER BUGS, BUT I DONT THINK IT IS USEFUL NOW
-//        if (horizontal) {
-//            return dxl > 0 ? (Utility.reduceDecimals(oldCoordinate.getX()) <= Utility.reduceDecimals(coordinate.getX()) && Utility.reduceDecimals(coordinate.getX()) <= Utility.reduceDecimals(currentCoordinate.getX()))
-//                    : (Utility.reduceDecimals(currentCoordinate.getX()) <= Utility.reduceDecimals(coordinate.getX()) && Utility.reduceDecimals(coordinate.getX()) <= Utility.reduceDecimals(oldCoordinate.getX()));
-//        } else {
-//            return dyl > 0 ? (Utility.reduceDecimals(oldCoordinate.getY()) <= Utility.reduceDecimals(coordinate.getY()) && Utility.reduceDecimals(coordinate.getY()) <= Utility.reduceDecimals(currentCoordinate.getY()))
-//                    : (Utility.reduceDecimals(currentCoordinate.getY()) <= Utility.reduceDecimals(coordinate.getY()) && Utility.reduceDecimals(coordinate.getY()) <= Utility.reduceDecimals(oldCoordinate.getY()));
-//        }
 
         if (horizontal) {
             return dxl > 0 ? (oldCoordinate.getX() <= coordinate.getX() && coordinate.getX() <= currentCoordinate.getX())
@@ -598,7 +595,7 @@ public class Photon {
         this.currentCoordinate.setY(this.currentCoordinate.getY() + v_y * 0.000000001);
     }
 
-    public void setInitialHorizontalIndex(ArrayList<GasLayerBend2D> gasLayers){
+    public void calculateHorizontalIndex(ArrayList<GasLayerBend2D> gasLayers){
         double omega = this.calculateOmega(this.currentCoordinate);
         for (int i = 0; i < gasLayers.size(); i++) {
             if (checkInsideAngle(gasLayers.get(i).getLeftOmega(), gasLayers.get(i).getRightOmega(), omega)){
