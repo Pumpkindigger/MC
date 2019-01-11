@@ -1,13 +1,16 @@
 package main;
 
+import main.objects.GasLayerBend2D;
+import main.objects.Photon;
+import scatterFunctions.HenyeyGreensteinScatter;
+
 public class TestMain {
 
     /** src/main/resources/<FILENAME>
      *
      */
     public static void main(String[] args){
-        System.out.println((-1) % 2);
-        //backtrackTest();
+        backtrackTest();
     }
 
     private static void databankTest(){
@@ -15,9 +18,9 @@ public class TestMain {
         System.out.println(dataBank.getAngle(238742));
     }
 
-//    private static void backtrackTest(){
-//        Photon photon = new Photon(-4.56632929756349, 2.036820253781204, 0);
-//        photon.setOldCoordinate(new Coordinate(-4.715312630145214, 2.085530369552514, 0));
-//        System.out.println(photon.backTrack(new GasLayerBend2D(10, 5, 360, 0, 5, 0, new HenyeyGreensteinScatter())));
-//    }
+    private static void backtrackTest(){
+        Photon photon = new Photon(-21.398631044570052, -6.82137225735025, -3.8029701420042796, true);
+        photon.setOldCoordinate(new Coordinate(-18.731939427385893, -5.428530163937989, -2.238152582293153));
+        System.out.println(photon.backTrack(new GasLayerBend2D(20, 10, 360, 0, 5, 0, new HenyeyGreensteinScatter())));
+    }
 }

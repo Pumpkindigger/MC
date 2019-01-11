@@ -27,25 +27,25 @@ public class SimulationBend {
         //GasLayerBend2D gasLayer1 = new GasLayerBend2D(10, 5, 360, 0, 2, 0.0, new CdfScatter("src/main/resources/400nm_cdf.txt"));
         //GasLayerBend2D gasLayer2 = new GasLayerBend2D(10, 5, 360, 0, 0.001, 0.0, new HenyeyGreensteinScatter());
 
-        GasLayerBend2D gasLayer1 = new GasLayerBend2D(10, 5, 180, 0, 1, 0.0, new HenyeyGreensteinScatter());
-        GasLayerBend2D gasLayer2 = new GasLayerBend2D(10, 5, 360, 180, 2, 0.0, new HenyeyGreensteinScatter());
+        GasLayerBend2D gasLayer1 = new GasLayerBend2D(10, 5, 360, 0, 5, 0.0, new HenyeyGreensteinScatter());
+        GasLayerBend2D gasLayer2 = new GasLayerBend2D(10, 5, 360, 180, 5, 0.0, new HenyeyGreensteinScatter());
         //-----------------Note: Add gaslayers in ascending left omega order---------------
         gasLayers1.add(gasLayer1);
         gasLayers1.add(gasLayer2);
 
-        GasLayerBend2D gasLayer3 = new GasLayerBend2D(20, 10, 180, 0, 1, 0.0, new HenyeyGreensteinScatter());
-        GasLayerBend2D gasLayer4 = new GasLayerBend2D(20, 10, 360, 180, 2, 0.0, new HenyeyGreensteinScatter());
+        GasLayerBend2D gasLayer3 = new GasLayerBend2D(20, 10, 360, 0, 3, 0.0, new HenyeyGreensteinScatter());
+        GasLayerBend2D gasLayer4 = new GasLayerBend2D(20, 10, 360, 180, 3, 0.0, new HenyeyGreensteinScatter());
 
         gasLayers2.add(gasLayer3);
         gasLayers2.add(gasLayer4);
 
-        //------------Note: add lists of gaslayers in descending outerR---------------------
-        atmosphere.add(gasLayers2);
+        //------------Note: add lists of gaslayers in ascending outerR---------------------
         atmosphere.add(gasLayers1);
+        atmosphere.add(gasLayers2);
 
         ArrayList<Photon> photons = new ArrayList<>();
         for (int i = 0; i < nrPhotons; i++) {
-            photons.add(new Photon(atmosphere.size(), 20, 45));
+            photons.add(new Photon(atmosphere.size(), 20, 90));
         }
         simulatePhotons(atmosphere, photons);
         Simulation3D.plotResult(nrPhotons, 20, photons);
@@ -170,12 +170,12 @@ public class SimulationBend {
                 //If left, then the photon exited the gaslayer on the left side, for now we eliminate the photon
                 case LEFT:
                     photon.setHorizontalIndex((photon.getHorizontalIndex()+1) % atmosphere.get(photon.getCurrentLayer()-1).size());
-                    //System.out.println("left");
+                    System.out.println("left");
                     break;
                 //if right, then the photon exited the gaslayer on the right side, for now we eliminate the photon
                 case RIGHT:
                     photon.setHorizontalIndex(Math.abs(photon.getHorizontalIndex()-1 % atmosphere.get(photon.getCurrentLayer()-1).size()));
-                    //System.out.println("right");
+                    System.out.println("right");
                     break;
             }
         }

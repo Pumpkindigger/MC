@@ -46,32 +46,29 @@ public class Photon {
         this.madeIt = false;
     }
 
-//    /**
-//     * Constructor used when we want to specify an x, y, and z coordinate.
-//     * Mostly used for testing
-//     * @param x x coordinate
-//     * @param y y coordinate
-//     * @param z z coordinate
-//     */
-//    public Photon(double x, double y, double z) {
-//        this.oldCoordinate = null;
-//        this.currentCoordinate = new Coordinate(x, y, z);
-//        this.v_x = 0;
-//        this.v_y = 0;
-//        this.v_z = 1;
-//        this.weight = Constants.startingWeight;
-//        this.eliminated = false;
-//        this.madeIt = false;
-//    }
+    /**
+     * Constructor used when we want to specify an x, y, and z coordinate.
+     * Mostly used for testing
+     * @param x x coordinate
+     * @param y y coordinate
+     * @param z z coordinate
+     */
+    public Photon(double x, double y, double z, boolean testing) {
+        this.oldCoordinate = null;
+        this.currentCoordinate = new Coordinate(x, y, z);
+        this.v_x = 0;
+        this.v_y = 0;
+        this.v_z = 1;
+        this.weight = Constants.startingWeight;
+        this.eliminated = false;
+        this.madeIt = false;
+    }
 
     public int getHorizontalIndex() {
         return horizontalIndex;
     }
 
     public void setHorizontalIndex(int horizontalIndex) {
-        if(horizontalIndex == 2){
-            System.out.println("test");
-        }
         this.horizontalIndex = horizontalIndex;
     }
 
@@ -463,11 +460,11 @@ public class Photon {
         boolean horizontal = Math.abs(dxl) >= Math.abs(dyl);
 
         if (horizontal) {
-            return dxl > 0 ? (oldCoordinate.getX() <= coordinate.getX() && coordinate.getX() <= currentCoordinate.getX())
-                    : (currentCoordinate.getX() <= coordinate.getX() && coordinate.getX() <= oldCoordinate.getX());
+            return dxl > 0 ? (oldCoordinate.getX() <= coordinate.getX() + Constants.epsilon && coordinate.getX() <= currentCoordinate.getX() + Constants.epsilon)
+                    : (currentCoordinate.getX() <= coordinate.getX() + Constants.epsilon && coordinate.getX() <= oldCoordinate.getX() + Constants.epsilon);
         } else {
-            return dyl > 0 ? (oldCoordinate.getY() <= coordinate.getY() && coordinate.getY() <= currentCoordinate.getY())
-                    : (currentCoordinate.getY() <= coordinate.getY() && coordinate.getY() <= oldCoordinate.getY());
+            return dyl > 0 ? (oldCoordinate.getY() <= coordinate.getY() + Constants.epsilon && coordinate.getY() <= currentCoordinate.getY() + Constants.epsilon)
+                    : (currentCoordinate.getY() <= coordinate.getY() + Constants.epsilon && coordinate.getY() <= oldCoordinate.getY() + Constants.epsilon);
         }
     }
 
