@@ -13,6 +13,6 @@ public class CdfScatter extends ScatterFunction{
 
     @Override
     public double calculateAngle(double g) {
-        return dataBank.getAngle(MyRandom.random()*dataBank.maxValue());
+        return Math.cos(dataBank.getAngle(MyRandom.random()*dataBank.maxValue()));
     }
 }
