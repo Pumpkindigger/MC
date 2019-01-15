@@ -11,7 +11,7 @@ public final class Constants {
     //Each photon packet starts with this weight
     public static final double startingWeight = 1000000;
     //Used in the final model
-    public static final int radiusMars = 3390000;
+    public static final int radiusMars = 3390;
     //An error margin for the inaccuracy of doubles
     public static final double epsilon = 0.000000001;
 }
