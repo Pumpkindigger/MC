@@ -208,7 +208,7 @@ public class Photon {
      * @param gaslayer the gaslayer from which to get the absorption factor
      */
     public void updateWeight(GasLayerAbstract gaslayer) {
-        this.weight = (this.weight - this.weight * gaslayer.getAbsorption() / gaslayer.getOpticalDepth());
+        this.weight = (this.weight - this.weight * gaslayer.getAbsorption());
     }
 
     /**

@@ -23,7 +23,7 @@ public class GasLayerBend2D extends GasLayerAbstract{
         super(k, g, scatterFunction);
         setGeometricalDepth(outerR - innerR);
         setOpticalDepth(k/getGeometricalDepth());
-        setAbsorption(getOpticalDepth()/2);
+        setAbsorption(0.5);
         this.outerR = outerR;
         this.innerR = innerR;
         this.leftOmega = leftOmega;
